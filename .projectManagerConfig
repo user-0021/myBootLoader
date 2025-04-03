@@ -1,0 +1,13 @@
+#Project info
+CC = x86_64-elf-gcc
+CFLAG = -nostdlib -shared -Wl,-T,aarch64.lds -Wl,-Bsymbolic -Wl,-znocombreloc -lgcc
+OBJ_FLAG = -ffreestanding -fpic -fno-stack-protector -fshort-wchar -mgeneral-regs-only -Wall -Wextra -Wpedantic -O3
+LIBRARY=
+SOURCE_DIR = core init uefi/lib
+INCLUDE_DIR = .
+OBJ_DIR = obj
+LIB =
+
+
+#Output
+OUTPUT = bootLoader.elf
