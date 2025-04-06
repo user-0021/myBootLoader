@@ -15,17 +15,16 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle,EFI_SYSTEM_TABLE *SystemTable)
 	s_wcprintf(SystemTable->ConOut,L"FirmwareVender   : %s\r\n",SystemTable->FirmwareVendor);
 	s_wcprintf(SystemTable->ConOut,L"FirmwareRevision : 0x%x\r\n\n",(UINT64)SystemTable->FirmwareRevision);
 
-	BOOTLOADER_DATA data;
+	BOOTLOADER_DATA data = {};
 
 	//init 
 	if(init_protocol(ImageHandle,SystemTable,&data.protocols) != EFI_SUCCESS){
 		SystemTable->RuntimeServices->ResetSystem(EfiResetShutdown,EFI_SUCCESS,0,NULL);
 	}
 
-	
-	s_wcprintf(SystemTable->ConOut,L"Device path   : %s\r\n",data.protocols.devPathToText->ConvertDevicePathToText(data.protocols.devPath,FALSE,FALSE));
+	s_wcprintf(SystemTable->ConOut,L"%s\n",data.protocols.devPathToText->ConvertDevicePathToText(data.protocols.devPath,0,0));
 
-	// init_bootloader(SystemTable);
+	init_bootloader(SystemTable,&data);
 
 	SystemTable->BootServices->Stall(5000000);
 

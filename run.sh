@@ -2,10 +2,10 @@
 unset GTK_PATH
 
 #build 
-# make all
+make all
 
 #make efi file
-# x86_64-elf-objcopy -I elf64-x86-64 -O efi-app-x86_64 bootLoader.elf BOOTX64.EFI
+x86_64-elf-objcopy -I elf64-x86-64 -O efi-app-x86_64 bootLoader.elf BOOTX64.EFI
 
 #make disk image
 dd if=/dev/zero of=fat.img bs=1k count=1440
@@ -13,6 +13,7 @@ mformat -i fat.img -f 1440 ::
 mmd -i fat.img ::/EFI
 mmd -i fat.img ::/EFI/BOOT
 mcopy -i fat.img BOOT*.EFI ::/EFI/BOOT
+mcopy -i fat.img EXE.EFI ::/EFI/BOOT
 
 #excute
 # /usr/bin/qemu-system-aarch64 -M virt -cpu cortex-a72 -m 1024 -bios QEMU_EFI.fd -drive file=fat.img,format=raw,if=virtio

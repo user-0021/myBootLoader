@@ -12,7 +12,16 @@ typedef struct
 
 typedef struct
 {
+	VOID* acpi20Table;
+	VOID* acpiTable;
+	VOID* smBios3Table;
+	VOID* smBiosTable;
+} TABLE_LIST;
+
+typedef struct
+{
 	PROTOCOL_LIST protocols;
+	TABLE_LIST tables;
 } BOOTLOADER_DATA;
 
 
