@@ -8,6 +8,7 @@ typedef struct
 	EFI_LOADED_IMAGE_PROTOCOL* loadedImage;
 	EFI_DEVICE_PATH_TO_TEXT_PROTOCOL* devPathToText;
 	EFI_DEVICE_PATH_FROM_TEXT_PROTOCOL* devPathFromText;
+	EFI_DEVICE_PATH_UTILITIES_PROTOCOL* devPathUtilities;
 } PROTOCOL_LIST;
 
 typedef struct
@@ -25,5 +26,5 @@ typedef struct
 } BOOTLOADER_DATA;
 
 
-EFI_STATUS init_protocol(EFI_HANDLE imageHandle,EFI_SYSTEM_TABLE* system,PROTOCOL_LIST* list);
+EFI_STATUS init_protocol(CONST EFI_HANDLE imageHandle,CONST EFI_SYSTEM_TABLE* system,PROTOCOL_LIST* list);
 EFI_STATUS init_bootloader(EFI_SYSTEM_TABLE *SystemTable,BOOTLOADER_DATA* data);

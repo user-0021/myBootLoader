@@ -13,7 +13,8 @@ mformat -i fat.img -f 1440 ::
 mmd -i fat.img ::/EFI
 mmd -i fat.img ::/EFI/BOOT
 mcopy -i fat.img BOOT*.EFI ::/EFI/BOOT
-mcopy -i fat.img EXE.EFI ::/EFI/BOOT
+mmd -i fat.img ::/kernel
+mcopy -i fat.img kernel.efi ::/kernel
 
 #excute
 # /usr/bin/qemu-system-aarch64 -M virt -cpu cortex-a72 -m 1024 -bios QEMU_EFI.fd -drive file=fat.img,format=raw,if=virtio

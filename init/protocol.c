@@ -22,7 +22,7 @@
 	}
 
 
-EFI_STATUS init_protocol(EFI_HANDLE imageHandle,EFI_SYSTEM_TABLE* system,PROTOCOL_LIST* list){
+EFI_STATUS init_protocol(CONST EFI_HANDLE imageHandle,CONST EFI_SYSTEM_TABLE* system,PROTOCOL_LIST* list){
 	//const value
 	CHAR16 openMsg[] = L"Open %s\r\n";
 	CHAR16 locateMsg[] = L"Find %s\r\n";
@@ -43,12 +43,16 @@ EFI_STATUS init_protocol(EFI_HANDLE imageHandle,EFI_SYSTEM_TABLE* system,PROTOCO
 	s_wcprintf(system->ConOut,L"\nTry find protocols:\r\n");
 	EFI_GUID devicePathToTextGUID = EFI_DEVICE_PATH_TO_TEXT_PROTOCOL_GUID;
 	EFI_GUID devicePathFromTextGUID = EFI_DEVICE_PATH_FROM_TEXT_PROTOCOL_GUID;
+	EFI_GUID devicePathUtilitiesGUID = EFI_DEVICE_PATH_UTILITIES_PROTOCOL_GUID;
 	
 	s_wcprintf(system->ConOut,locateMsg,L"EFI_DEVICE_PATH_TO_TEXT_PROTOCOL");
 	LOCATE_PROTOCOL(system,status,devicePathToTextGUID,list->devPathToText);
 
 	s_wcprintf(system->ConOut,locateMsg,L"EFI_DEVICE_PATH_FROM_TEXT_PROTOCOL");
 	LOCATE_PROTOCOL(system,status,devicePathFromTextGUID,list->devPathFromText);
+
+	s_wcprintf(system->ConOut,locateMsg,L"EFI_DEVICE_PATH_UTILITIES_PROTOCOL");
+	LOCATE_PROTOCOL(system,status,devicePathUtilitiesGUID,list->devPathUtilities);
 
 	return EFI_SUCCESS;
 }

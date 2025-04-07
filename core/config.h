@@ -6,5 +6,5 @@
 extern char ImageBase;
 extern char _kernel_end;
 
-static const void* imageBegin = &ImageBase;
-static const void* imageEnd = &_kernel_end;
+static __attribute__((__unused__)) const void* imageBegin = &ImageBase;
+static __attribute__((__unused__)) const void* imageEnd = &_kernel_end;

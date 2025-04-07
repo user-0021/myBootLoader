@@ -115,6 +115,9 @@ void s_wcprintf(EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL* out,CHAR16* fmt,...){
 					if(isFillZero)
 						isConverting = 1;
 				}else{
+					if(isFillZero)
+						isConverting = 1;
+
 					while (!isConverting)
 					{
 						if((x >> (digitChecker << 2)) & 0xF)
@@ -123,7 +126,6 @@ void s_wcprintf(EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL* out,CHAR16* fmt,...){
 							digitChecker--;
 
 						if(!digitChecker){
-							digitChecker = 1;
 							isConverting = 1;
 						}
 					}

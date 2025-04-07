@@ -50,7 +50,7 @@ typedef struct _EFI_BOOT_SERVICES{
 	//
 	// Image Services
 	//
-	EFI_IMAGE_UNLOAD               LoadImage;        // EFI 1.0+
+	EFI_IMAGE_LOAD				   LoadImage;        // EFI 1.0+
 	EFI_IMAGE_START                StartImage;       // EFI 1.0+
 	EFI_EXIT                       Exit;             // EFI 1.0+
 	EFI_IMAGE_UNLOAD               UnloadImage;      // EFI 1.0+

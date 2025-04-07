@@ -136,7 +136,7 @@ EFI_STATUS init_bootloader(EFI_SYSTEM_TABLE *SystemTable,BOOTLOADER_DATA* data){
 
 		s_wcprintf(SystemTable->ConOut,L"MemoryMapSize         : 0x%x\r\n",mapSize);
 		s_wcprintf(SystemTable->ConOut,L"MemoryDescripterSize  : 0x%x\r\n",descSize);
-		s_wcprintf(SystemTable->ConOut,L"MemoryDescripterCount : 0x%x\r\n",descCount);
+		s_wcprintf(SystemTable->ConOut,L"MemoryDescripterCount : 0x%x\r\n\n",descCount);
 
 		
 
