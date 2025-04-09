@@ -2,6 +2,7 @@
 unset GTK_PATH
 
 #build 
+pmn b x86_64
 make all
 
 #make efi file

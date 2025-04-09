@@ -11,10 +11,11 @@
 EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle,EFI_SYSTEM_TABLE *SystemTable){
 	SystemTable->ConOut->ClearScreen(SystemTable->ConOut);
 
-	s_wcprintf(SystemTable->ConOut,L"Success lunch bootloader:%0x\r\n\n",(UINT64)efi_main);
+	s_wcprintf(SystemTable->ConOut,L"Success lunch bootloader\r\n\n");
 	s_wcprintf(SystemTable->ConOut,L"Load firmware info\r\n");
 	s_wcprintf(SystemTable->ConOut,L"FirmwareVender   : %s\r\n",SystemTable->FirmwareVendor);
 	s_wcprintf(SystemTable->ConOut,L"FirmwareRevision : 0x%0x\r\n\n",(UINT64)SystemTable->FirmwareRevision);
+
 
 	BOOTLOADER_DATA data = {0};
 
