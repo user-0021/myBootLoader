@@ -2,11 +2,14 @@
 unset GTK_PATH
 
 #build 
-pmn b x86_64
+pmn b x86_64-bootloader
+make all
+pmn b x86_64-kernel
 make all
 
 #make efi file
 x86_64-elf-objcopy -I elf64-x86-64 -O efi-app-x86_64 bootLoader.elf BOOTX64.EFI
+x86_64-elf-objcopy -I elf64-x86-64 -O efi-app-x86_64 kernel.elf kernel.efi
 
 #make disk image
 dd if=/dev/zero of=fat.img bs=1k count=1440

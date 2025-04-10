@@ -1,5 +1,5 @@
 #build executable file
-build:bootLoader.elf
+build:kernel.elf
 
 #make objs
 obj:
@@ -20,10 +20,10 @@ obj/bootloader.o: init/bootloader.c
 obj/consoleio.o: uefi/lib/consoleio.c
 	x86_64-elf-gcc -o obj/consoleio.o uefi/lib/consoleio.c -I . -ffreestanding -fpic -fno-stack-protector -fshort-wchar -mno-red-zone -mgeneral-regs-only -mabi=ms -Wall -Wextra -Wpedantic -O3 -c
 
-bootLoader.elf: obj obj/main.o obj/protocol.o obj/kernel.o obj/bootloader.o obj/consoleio.o
-	x86_64-elf-gcc -o bootLoader.elf obj/main.o obj/protocol.o obj/kernel.o obj/bootloader.o obj/consoleio.o -nostdlib -shared -Wl,-T,x86_64.lds -Wl,-Bsymbolic -Wl,-znocombreloc -lgcc
+kernel.elf: obj obj/main.o obj/protocol.o obj/kernel.o obj/bootloader.o obj/consoleio.o
+	x86_64-elf-gcc -o kernel.elf obj/main.o obj/protocol.o obj/kernel.o obj/bootloader.o obj/consoleio.o -nostdlib -Wl,-T,x86_64.lds -Wl,-Bsymbolic -Wl,-znocombreloc -lgcc
 
-all: clean bootLoader.elf
+all: clean kernel.elf
 
 clean:
-	$(RM) bootLoader.elf obj/main.o obj/protocol.o obj/kernel.o obj/bootloader.o obj/consoleio.o
+	$(RM) kernel.elf obj/main.o obj/protocol.o obj/kernel.o obj/bootloader.o obj/consoleio.o
