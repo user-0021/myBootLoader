@@ -145,11 +145,13 @@ EFI_STATUS init_bootloader(EFI_SYSTEM_TABLE *SystemTable,BOOTLOADER_DATA* data){
 			s_wcprintf(SystemTable->ConOut,
 				L"MemoryType     : %s\r\n"
 				L"MemoryAddress  : 0x%x\r\n"
+				L"NextAddress    : 0x%x\r\n"
 				L"MemoryVAddress : 0x%x\r\n"
 				L"MemorySize     : 0x%x\r\n"
 				L"Atteribute     : 0x%x\r\n\n"
 				,castTypeName(desc->Type)
 				,desc->PhysicalStart
+				,desc->PhysicalStart + (desc->NumberOfPages<<12)
 				,desc->VirtualStart
 				,desc->NumberOfPages
 				,desc->Attribute);

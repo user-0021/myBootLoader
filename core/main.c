@@ -2,6 +2,7 @@
 #include <uefi/lib/consoleio.h>
 #include <init/bootloader.h>
 #include <init/kernel.h>
+#include <mem/virtualAddress.h>
 
 #include "config.h"
 
@@ -27,6 +28,12 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle,EFI_SYSTEM_TABLE *SystemTable)
 	//load kernel
 	if(load_kernel(SystemTable,ImageHandle,&data.protocols,KERNEL_PATH) != EFI_SUCCESS){
 		SystemTable->RuntimeServices->ResetSystem(EfiResetShutdown,EFI_SUCCESS,0,NULL);
+	}
+
+	void* pointer = createVirtualMap(SystemTable->BootServices,NULL,NULL);
+	int i;
+	for(i = 0;i < 512;i++){
+		s_wcprintf(SystemTable->ConOut,L"%0x\r\n",((UINT64*)pointer)[i]);
 	}
 
 	//init bootloader
