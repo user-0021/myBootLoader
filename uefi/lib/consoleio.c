@@ -3,7 +3,12 @@
 #include <stddef.h>
 #include <stdarg.h>
 
-void s_wcprintf(EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL* out,CHAR16* fmt,...){
+EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL* stdout = NULL;
+
+void wcprintf(CHAR16* fmt,...){
+	if(stdout == NULL)
+		return;
+
 	CHAR16 buffer[2] = {L'\0',L'\0'};
 
     va_list args;
@@ -36,11 +41,11 @@ void s_wcprintf(EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL* out,CHAR16* fmt,...){
 			{
 			case L'%':
 				buffer[0] = *fmt;
-				out->OutputString(out,buffer);
+				stdout->OutputString(stdout,buffer);
 				break;
 			case L's':{
             	CHAR16* s = va_arg(args,CHAR16*);
-				out->OutputString(out,s);
+				stdout->OutputString(stdout,s);
 			}
 			break;
 			case L'd':
@@ -53,7 +58,7 @@ void s_wcprintf(EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL* out,CHAR16* fmt,...){
 				if(*fmt == L'd' && d & ((uint64_t)1<<63)){
 					d*=-1;
 					buffer[0] = L'-';
-					out->OutputString(out,buffer);
+					stdout->OutputString(stdout,buffer);
 				}
 
 				//serch digit
@@ -83,7 +88,7 @@ void s_wcprintf(EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL* out,CHAR16* fmt,...){
 				do{
 					if(isConverting){
 						buffer[0] = L'0' + (d/digitChecker)%10;
-						out->OutputString(out,buffer);
+						stdout->OutputString(stdout,buffer);
 						digitChecker/=10;
 					}else{
 						if((d/digitChecker)%10)
@@ -91,7 +96,7 @@ void s_wcprintf(EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL* out,CHAR16* fmt,...){
 						else{
 							digitChecker/=10;
 							buffer[0] = L' ';
-							out->OutputString(out,buffer);
+							stdout->OutputString(stdout,buffer);
 						}
 
 						if(!digitChecker){
@@ -139,7 +144,7 @@ void s_wcprintf(EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL* out,CHAR16* fmt,...){
 						else
 							buffer[0] = L'0' + byte;
 
-						out->OutputString(out,buffer);
+						stdout->OutputString(stdout,buffer);
 						digitChecker--;
 					}else{
 						if((x >> (digitChecker << 2)) & 0xF)
@@ -147,7 +152,7 @@ void s_wcprintf(EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL* out,CHAR16* fmt,...){
 						else{
 							digitChecker--;
 							buffer[0] = L' ';
-							out->OutputString(out,buffer);
+							stdout->OutputString(stdout,buffer);
 						}
 
 						if(!digitChecker){
@@ -168,7 +173,7 @@ void s_wcprintf(EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL* out,CHAR16* fmt,...){
 		
 		default:
 			buffer[0] = *fmt;
-			out->OutputString(out,buffer);
+			stdout->OutputString(stdout,buffer);
 			break;
 		}
 

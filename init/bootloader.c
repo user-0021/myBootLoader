@@ -78,9 +78,8 @@ CHAR16* castTypeName(UINT16 type){
 	}
 }
 
-void print_GUID(EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL* ConOut ,EFI_GUID guid){
-	s_wcprintf(ConOut,
-		L"GUID:%08x-%04x-%04x-%02x%02x%02x%02x%02x%02x%02x%02x\r\n\n"
+void print_GUID(EFI_GUID guid){
+	wcprintf(L"GUID:%08x-%04x-%04x-%02x%02x%02x%02x%02x%02x%02x%02x\r\n\n"
 		,guid.Data1,guid.Data2,guid.Data3
 		,guid.Data4[0],guid.Data4[1],guid.Data4[2],guid.Data4[3],guid.Data4[4],guid.Data4[5],guid.Data4[6],guid.Data4[7]);
 }
@@ -88,26 +87,26 @@ void print_GUID(EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL* ConOut ,EFI_GUID guid){
 EFI_STATUS init_bootloader(EFI_SYSTEM_TABLE *SystemTable,BOOTLOADER_DATA* data){
 
 	//Load Configuration Table
-	s_wcprintf(SystemTable->ConOut,L"\nLoad Configuration Table\r\n\n");
+	wcprintf(L"\nLoad Configuration Table\r\n\n");
 
 	UINTN i;
 	for(i = 0;i < SystemTable->NumberOfTableEntries;i++){
 		if(GUID_EQ(SystemTable->ConfigurationTable[i].VendorGuid,(EFI_GUID)EFI_ACPI_20_TABLE_GUID)){
-			s_wcprintf(SystemTable->ConOut,L"Tabletype:ACPI_20_TABLE\r\n");
+			wcprintf(L"Tabletype:ACPI_20_TABLE\r\n");
 			data->tables.acpi20Table = SystemTable->ConfigurationTable[i].VendorTable;
 		}else if(GUID_EQ(SystemTable->ConfigurationTable[i].VendorGuid,(EFI_GUID)EFI_ACPI_TABLE_GUID)){
-			s_wcprintf(SystemTable->ConOut,L"Tabletype:ACPI_TABLE\r\n");
+			wcprintf(L"Tabletype:ACPI_TABLE\r\n");
 			data->tables.acpiTable = SystemTable->ConfigurationTable[i].VendorTable;
 		}else if(GUID_EQ(SystemTable->ConfigurationTable[i].VendorGuid,(EFI_GUID)EFI_SMBIOS3_TABLE_GUID)){
-			s_wcprintf(SystemTable->ConOut,L"Tabletype:SMBIOS3_TABLE_GUID\r\n");
+			wcprintf(L"Tabletype:SMBIOS3_TABLE_GUID\r\n");
 			data->tables.smBios3Table = SystemTable->ConfigurationTable[i].VendorTable;
 		}else if(GUID_EQ(SystemTable->ConfigurationTable[i].VendorGuid,(EFI_GUID)EFI_SMBIOS_TABLE_GUID)){
-			s_wcprintf(SystemTable->ConOut,L"Tabletype:SMBIOS_TABLE_GUID\r\n");
+			wcprintf(L"Tabletype:SMBIOS_TABLE_GUID\r\n");
 			data->tables.smBiosTable = SystemTable->ConfigurationTable[i].VendorTable;
 		}else{
-			s_wcprintf(SystemTable->ConOut,L"Tabletype:unknow\r\n");
+			wcprintf(L"Tabletype:unknow\r\n");
 		}
-		print_GUID(SystemTable->ConOut,SystemTable->ConfigurationTable[i].VendorGuid);
+		print_GUID(SystemTable->ConfigurationTable[i].VendorGuid);
 	}
 
 	//check table
@@ -134,15 +133,15 @@ EFI_STATUS init_bootloader(EFI_SYSTEM_TABLE *SystemTable,BOOTLOADER_DATA* data){
 		UINTN descCount = mapSize / descSize;
 		EFI_MEMORY_DESCRIPTOR* desc = (void*)descripterBuffer;
 
-		s_wcprintf(SystemTable->ConOut,L"MemoryMapSize         : 0x%x\r\n",mapSize);
-		s_wcprintf(SystemTable->ConOut,L"MemoryDescripterSize  : 0x%x\r\n",descSize);
-		s_wcprintf(SystemTable->ConOut,L"MemoryDescripterCount : 0x%x\r\n\n",descCount);
+		wcprintf(L"MemoryMapSize         : 0x%x\r\n",mapSize);
+		wcprintf(L"MemoryDescripterSize  : 0x%x\r\n",descSize);
+		wcprintf(L"MemoryDescripterCount : 0x%x\r\n\n",descCount);
 
 		
 
 		for(i = 0;i < descCount;i++){
 
-			s_wcprintf(SystemTable->ConOut,
+			wcprintf(
 				L"MemoryType     : %s\r\n"
 				L"MemoryAddress  : 0x%x\r\n"
 				L"NextAddress    : 0x%x\r\n"

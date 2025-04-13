@@ -1,4 +1,5 @@
 #include <mem/virtualAddress.h>
+#include <uefi/lib/consoleio.h>
 
 #define ENTRY_PRESENT(b) 				(((b) & 1UL) << 0)					//このページはメモリ内にある
 #define ENTRY_WRITABLE(b) 				(((b) & 1UL) << 1)					//このページへの書き込みは許可されている
@@ -20,14 +21,23 @@
 #define VADDRESS_GET_LEV1_OFFSET(address)	(((address) >> 12) & 0x1FF)
 #define VADDRESS_GET_PAGE_OFFSET(address)	(((address) >>  0) & 0xFFF)
 
-EFI_PHYSICAL_ADDRESS createVirtualMap(EFI_BOOT_SERVICES* bootServices,EFI_LOADED_IMAGE_PROTOCOL* kernel,EFI_VIRTUAL_ADDRESS* preaceAddress){
+EFI_PHYSICAL_ADDRESS createVirtualMap(EFI_BOOT_SERVICES* bootServices,EFI_LOADED_IMAGE_PROTOCOL* kernel){
 	EFI_PHYSICAL_ADDRESS memoryEnd;
-
-	//allocate lev page
 	EFI_PHYSICAL_ADDRESS lev4_page;
-	EFI_STATUS status = bootServices->AllocatePages(AllocateAnyPages,EfiLoaderData,1,&lev4_page);
-	if(status != EFI_SUCCESS)
+	EFI_STATUS status;
+
+	wcprintf(L"CreateVirtualMap..\r\n\n");
+
+	//allocate lev4 page
+	wcprintf(L"Try allocate lev4 table..\r\n");
+	status = bootServices->AllocatePages(AllocateAnyPages,EfiLoaderData,1,&lev4_page);
+	if(status != EFI_SUCCESS){
+		wcprintf(L"...Failed(ErrorCode:%x)\r\n\n",status);
 		return (EFI_PHYSICAL_ADDRESS)NULL;
+	}else{
+		wcprintf(L"...Success\r\n");
+		wcprintf(L"Locate on %0x\r\n\n",(UINT64)lev4_page);
+	}
 
 	bootServices->SetMem((void*)lev4_page,MEMORY_PAGE_SIZE,0);
 	
@@ -37,12 +47,15 @@ EFI_PHYSICAL_ADDRESS createVirtualMap(EFI_BOOT_SERVICES* bootServices,EFI_LOADED
 	UINT32 descVer;
 	EFI_PHYSICAL_ADDRESS descripterBuffer = 0;
 
+	wcprintf(L"Try load availeble memory..\r\n");
+	wcprintf(L"Try get memory map..\r\n");
 	status = bootServices->GetMemoryMap(&mapSize,(void*)descripterBuffer,&mapKey,&descSize,&descVer);
 	if(status == EFI_BUFFER_TOO_SMALL){
 		mapSize = (mapSize >> 12) + 2;
 		EFI_PHYSICAL_ADDRESS tmp;
 		status = bootServices->AllocatePages(AllocateAnyPages,EfiBootServicesData,mapSize,&tmp);
-		descripterBuffer = (void*)tmp;
+		descripterBuffer = tmp;
+		mapSize = mapSize << 12;
 
 		if(status == EFI_SUCCESS)
 			status = bootServices->GetMemoryMap(&mapSize,(void*)descripterBuffer,&mapKey,&descSize,&descVer);
@@ -50,14 +63,18 @@ EFI_PHYSICAL_ADDRESS createVirtualMap(EFI_BOOT_SERVICES* bootServices,EFI_LOADED
 
 	if(status == EFI_SUCCESS){
 		UINTN descCount = mapSize / descSize;
-		EFI_MEMORY_DESCRIPTOR* desc = (void*)descripterBuffer;
+		UINT8* desc = (void*)descripterBuffer;
 		desc += descSize * (descCount - 1);
-		while(desc->Type == EfiReservedMemoryType){
+		while(((EFI_MEMORY_DESCRIPTOR*)desc)->Type == EfiReservedMemoryType){
 			desc -= descSize;
 		}
 
-			memoryEnd = desc->PhysicalStart + desc->NumberOfPages;
+			memoryEnd = ((EFI_MEMORY_DESCRIPTOR*)desc)->PhysicalStart + (((EFI_MEMORY_DESCRIPTOR*)desc)->NumberOfPages << 12);
+
+		wcprintf(L"...Success\r\n");
+		wcprintf(L"Memory availeble length:%0x\r\n",memoryEnd);
 	}else{
+		wcprintf(L"...Failed(ErrorCode:%x)\r\n\n",status);
 		return (EFI_PHYSICAL_ADDRESS)NULL;
 	}
 
@@ -69,15 +86,23 @@ EFI_PHYSICAL_ADDRESS createVirtualMap(EFI_BOOT_SERVICES* bootServices,EFI_LOADED
 	EFI_PHYSICAL_ADDRESS directMap_lev3_pages;
 	EFI_PHYSICAL_ADDRESS directMapEnd = memoryEnd + MEMORY_DIRECTMAP_HEAD;
 	UINT64 directMapSize = (VADDRESS_GET_LEV4_OFFSET(directMapEnd) - i) + 1;
+
+	wcprintf(L"Try allocate direct map table..\r\n");
 	status = bootServices->AllocatePages(AllocateAnyPages,EfiLoaderData,directMapSize,&directMap_lev3_pages);
-	if(status != EFI_SUCCESS)
+	if(status != EFI_SUCCESS){
+		wcprintf(L"...Failed(ErrorCode:%x)\r\n\n",status);
 		return (EFI_PHYSICAL_ADDRESS)NULL;
+	}else{
+		wcprintf(L"...Success\r\n");
+		wcprintf(L"Locate on %0x\r\n\n",(UINT64)directMap_lev3_pages);
+	}
 
 	bootServices->SetMem((void*)directMap_lev3_pages,MEMORY_PAGE_SIZE * directMapSize,0);
 	limit = VADDRESS_GET_LEV4_OFFSET(directMapEnd);
 	for(; i <= limit ;i++){
 		((UINT64*)lev4_page)[i] = ENTRY_PRESENT(1) | ENTRY_WRITABLE(1) | ENTRY_GROABAL(1) 
-			| ENTRY_NO_EXECUTEBLE(1) | ENTRY_PHYSICAL_ADDRESS(directMap_lev3_pages + i * MEMORY_PAGE_SIZE);
+			| ENTRY_NO_EXECUTEBLE(1) | ENTRY_PHYSICAL_ADDRESS(directMap_lev3_pages);
+		directMap_lev3_pages += MEMORY_PAGE_SIZE;
 	}
 
 	return lev4_page;
