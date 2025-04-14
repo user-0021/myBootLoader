@@ -45,14 +45,6 @@ EFI_STATUS load_kernel(CONST EFI_SYSTEM_TABLE* systemTable,CONST EFI_HANDLE pare
 
 
 	void* pointer = (void*)createVirtualMap(systemTable->BootServices,kernelLoadedImage);
-	if(pointer != NULL){
-		int i;
-		for(i = 0;i < 512;i++){
-			wcprintf(L"%0x\r\n",((UINT64*)pointer)[i]);
-		}
-	}else{
-		wcprintf(L"%0x\r\n",(UINT64)pointer);
-	}
 
 	return EFI_SUCCESS;
 }
