@@ -9,7 +9,7 @@
 	if(status == EFI_SUCCESS)\
 		wcprintf(L"...Success\r\n");\
 	else{\
-		wcprintf(L"...Failed(ErrorCode:%x)\r\n",(UINT64)status);\
+		wcprintf(L"...Failed(ErrorCode:0x%x)\r\n",(UINT64)status);\
 		return status;\
 	}
 
@@ -27,7 +27,7 @@ EFI_STATUS load_kernel(CONST EFI_SYSTEM_TABLE* systemTable,CONST EFI_HANDLE pare
 	if(status == EFI_SUCCESS)
 		wcprintf(L"...Success\r\n");\
 	else{
-		wcprintf(L"...Failed(ErrorCode:%x)\r\n",(UINT64)status);\
+		wcprintf(L"...Failed(ErrorCode:0x%x)\r\n",(UINT64)status);\
 		return status;
 	}
 
@@ -36,10 +36,10 @@ EFI_STATUS load_kernel(CONST EFI_SYSTEM_TABLE* systemTable,CONST EFI_HANDLE pare
 	EFI_LOADED_IMAGE_PROTOCOL* kernelLoadedImage;
 	OPEN_PROTOCOL(systemTable,status,kernelImage,loadedImageProtocolGUID,kernelLoadedImage,parent);
 
-	wcprintf(L"Kernel image base:%0x\r\n",(UINTN)kernelLoadedImage->ImageBase);
-	wcprintf(L"Kernel image size:%0x\r\n",(UINTN)kernelLoadedImage->ImageSize);
-	wcprintf(L"Kernel image code type:%0x\r\n",(UINTN)kernelLoadedImage->ImageCodeType);
-	wcprintf(L"Kernel image data type:%0x\r\n",(UINTN)kernelLoadedImage->ImageDataType);
+	wcprintf(L"Kernel image base:0x%0x\r\n",(UINTN)kernelLoadedImage->ImageBase);
+	wcprintf(L"Kernel image size:0x%0x\r\n",(UINTN)kernelLoadedImage->ImageSize);
+	wcprintf(L"Kernel image code type:0x%0x\r\n",(UINTN)kernelLoadedImage->ImageCodeType);
+	wcprintf(L"Kernel image data type:0x%0x\r\n",(UINTN)kernelLoadedImage->ImageDataType);
 
 	wcprintf(L"\n");
 

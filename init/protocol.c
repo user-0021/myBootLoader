@@ -8,7 +8,7 @@
 	if(status == EFI_SUCCESS)\
 		wcprintf(L"...Success\r\n");\
 	else{\
-		wcprintf(L"...Failed(ErrorCode:%x)\r\n",(UINT64)status);\
+		wcprintf(L"...Failed(ErrorCode:0x%x)\r\n",(UINT64)status);\
 		return status;\
 	}
 
@@ -17,7 +17,7 @@
 	if(status == EFI_SUCCESS)\
 		wcprintf(L"...Success\r\n");\
 	else{\
-		wcprintf(L"...Failed(ErrorCode:%x)\r\n",(UINT64)status);\
+		wcprintf(L"...Failed(ErrorCode:0x%x)\r\n",(UINT64)status);\
 		return status;\
 	}
 

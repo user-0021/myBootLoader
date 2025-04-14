@@ -78,7 +78,7 @@ EFI_PHYSICAL_ADDRESS createVirtualMap(EFI_BOOT_SERVICES* bootServices,EFI_LOADED
 			memorySize = (((EFI_MEMORY_DESCRIPTOR*)desc)->PhysicalStart >> 12) + (((EFI_MEMORY_DESCRIPTOR*)desc)->NumberOfPages - 1);
 
 		wcprintf(L"...Success\r\n");
-		wcprintf(L"Memory availeble size:%0x\r\n",memorySize);
+		wcprintf(L"Memory availeble size:0x%x\r\n",memorySize);
 	}else{
 		wcprintf(L"...Failed(ErrorCode:%x)\r\n\n",status);
 		return (EFI_PHYSICAL_ADDRESS)NULL;
@@ -97,26 +97,6 @@ EFI_PHYSICAL_ADDRESS createVirtualMap(EFI_BOOT_SERVICES* bootServices,EFI_LOADED
 		wcprintf(L"...Success\r\n");
 	}
 
-	UINT64 i;
-	for(i = 0;i < 1;i++){
-		EFI_PHYSICAL_ADDRESS lev3_page = *((UINT64*)(void*)(lev4_page + ((VADDRESS_GET_LEV4_OFFSET(MEMORY_DIRECTMAP_HEAD)) << 3))) & 0xFFFFFFFFFF000UL;
-
-		UINT64 j;
-		for(j = 0;j < 1;j++){
-			EFI_PHYSICAL_ADDRESS lev2_page = *((UINT64*)(void*)(lev3_page + (j << 3))) & 0xFFFFFFFFFF000UL;
-
-			UINT64 k;
-			for(k = 0;k < 128;k++){
-				EFI_PHYSICAL_ADDRESS lev1_page = *((UINT64*)(void*)(lev2_page + (k << 3))) & 0xFFFFFFFFFF000UL;
-
-				UINT64 l;
-				for(l = 0;l < 512;l++){
-					EFI_PHYSICAL_ADDRESS lev0_page = *((UINT64*)(void*)(lev1_page + (l << 3))) & 0xFFFFFFFFFF000UL;
-					wcprintf(L"%0x:%0x\r\n",(i << 39) | (j << 30) | (k << 21) | (l << 12),lev0_page);
-				}
-			}
-		}
-	}
 
 	return lev4_page;
 }
