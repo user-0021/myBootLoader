@@ -97,6 +97,19 @@ EFI_PHYSICAL_ADDRESS createVirtualMap(EFI_BOOT_SERVICES* bootServices,EFI_LOADED
 		wcprintf(L"...Success\r\n");
 	}
 
+	// kernel text 
+	wcprintf(L"Try allocate kernel text table..\r\n");
+	status = allocatePageTableLinear(bootServices,lev4_page,VADDRESS_GET_LEV4_OFFSET(MEMORY_KERNEL_HEAD)
+		,kernel->ImageBase,kernel->ImageSize,ENTRY_PRESENT(1) | ENTRY_GROABAL(1));
+
+	if(status != EFI_SUCCESS){
+		wcprintf(L"...Failed(ErrorCode:%x)\r\n\n",status);
+		return (EFI_PHYSICAL_ADDRESS)NULL;
+	}else{
+		wcprintf(L"...Success\r\n");
+	}
+
+	
 
 	return lev4_page;
 }
