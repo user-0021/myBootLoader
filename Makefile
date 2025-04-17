@@ -1,5 +1,5 @@
 #build executable file
-build:kernel.elf
+build:bootLoader.elf
 
 #make objs
 obj:
@@ -23,10 +23,10 @@ obj/consoleio.o: uefi/lib/consoleio.c
 obj/virtualAddress.o: arch/x86_64/virtualAddress.c
 	x86_64-elf-gcc -o obj/virtualAddress.o arch/x86_64/virtualAddress.c -I . -ffreestanding -fpic -fno-stack-protector -fshort-wchar -mno-red-zone -mgeneral-regs-only -mabi=ms -Wall -Wextra -Wpedantic -O3 -c
 
-kernel.elf: obj obj/main.o obj/protocol.o obj/kernel.o obj/bootloader.o obj/consoleio.o obj/virtualAddress.o
-	x86_64-elf-gcc -o kernel.elf obj/main.o obj/protocol.o obj/kernel.o obj/bootloader.o obj/consoleio.o obj/virtualAddress.o -nostdlib -Wl,-T,x86_64.lds -Wl,-Bsymbolic -Wl,-znocombreloc -lgcc
+bootLoader.elf: obj obj/main.o obj/protocol.o obj/kernel.o obj/bootloader.o obj/consoleio.o obj/virtualAddress.o
+	x86_64-elf-gcc -o bootLoader.elf obj/main.o obj/protocol.o obj/kernel.o obj/bootloader.o obj/consoleio.o obj/virtualAddress.o -nostdlib -shared -Wl,-T,x86_64.lds -Wl,-Bsymbolic -Wl,-znocombreloc -lgcc
 
-all: clean kernel.elf
+all: clean bootLoader.elf
 
 clean:
-	$(RM) kernel.elf obj/main.o obj/protocol.o obj/kernel.o obj/bootloader.o obj/consoleio.o obj/virtualAddress.o
+	$(RM) bootLoader.elf obj/main.o obj/protocol.o obj/kernel.o obj/bootloader.o obj/consoleio.o obj/virtualAddress.o

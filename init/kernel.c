@@ -13,8 +13,7 @@
 		return status;\
 	}
 
-EFI_STATUS load_kernel(CONST EFI_SYSTEM_TABLE* systemTable,CONST EFI_HANDLE parent,CONST PROTOCOL_LIST* list,CONST CHAR16* kernel_file){
-
+EFI_STATUS load_kernel(CONST EFI_SYSTEM_TABLE* systemTable,CONST EFI_HANDLE parent,CONST PROTOCOL_LIST* list,CONST CHAR16* kernel_file,EFI_PHYSICAL_ADDRESS* kernelPage4){
 	wcprintf(L"\nTry load kernel\r\n");
 
 	EFI_DEVICE_PATH_PROTOCOL* kernelPath	= list->devPathFromText->ConvertTextToDevicPath(kernel_file);
@@ -44,7 +43,11 @@ EFI_STATUS load_kernel(CONST EFI_SYSTEM_TABLE* systemTable,CONST EFI_HANDLE pare
 	wcprintf(L"\n");
 
 
-	void* pointer = (void*)createVirtualMap(systemTable->BootServices,kernelLoadedImage);
+	EFI_PHYSICAL_ADDRESS pointer = createVirtualMap(systemTable->BootServices,kernelLoadedImage);
+	if(pointer == (EFI_PHYSICAL_ADDRESS)NULL){
+		return EFI_NOT_READY;
+	}
+	*kernelPage4 = pointer;
 
 	return EFI_SUCCESS;
 }

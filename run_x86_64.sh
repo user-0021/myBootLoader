@@ -18,5 +18,5 @@ mmd -i fat.img ::/kernel
 mcopy -i fat.img kernel.efi ::/kernel
 
 #excute
-# /usr/bin/qemu-system-aarch64 -M virt -cpu cortex-a72 -m 1024 -bios QEMU_EFI.fd -drive file=fat.img,format=raw,if=virtio
-qemu-system-x86_64 -machine q35 -m 256 -smp 2 -bios OVMF.fd -drive file=fat.img,format=raw,if=virtio 
+# qemu-system-x86_64 -machine q35 -m 256 -smp 2 -bios OVMF.fd -drive file=fat.img,format=raw,if=virtio
+qemu-system-x86_64 -machine q35 -m 256 -smp 2 -bios OVMF.fd -drive file=fat.img,format=raw,if=virtio -d cpu_reset -D qemu.log
