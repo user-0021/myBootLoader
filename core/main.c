@@ -57,7 +57,6 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle,EFI_SYSTEM_TABLE *SystemTable)
 	if(init_bootloader(SystemTable,&data) != EFI_SUCCESS){
 		SystemTable->RuntimeServices->ResetSystem(EfiResetShutdown,EFI_SUCCESS,0,NULL);
 	}
-	
 
 	UINT64 msr_flag = (1 << 8) | (1 << 11);
 	UINT64 cr0_flag = (1 << 31) | (1 << 11);
@@ -84,7 +83,6 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle,EFI_SYSTEM_TABLE *SystemTable)
 		"or %%rbx, %[cr0_flag]\n\t"
 		"mov %%rbx, %%cr0\n\t"
 
-
 		//Now reload the segment registers (CS, DS, SS, etc.) with the appropriate segment selectors...
 		"lgdt (%[gdtr])\n\t"
 		"mov $0x10, %%ax\n\t"
@@ -93,6 +91,7 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle,EFI_SYSTEM_TABLE *SystemTable)
 		"mov %%ax, %%ss\n\t"
 		"mov %%ax, %%fs\n\t"
 		"mov %%ax, %%gs\n\t"
+
 		
 		//Reload CS with a 64-bit code selector by performing a long jmp
 
@@ -105,7 +104,8 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle,EFI_SYSTEM_TABLE *SystemTable)
 			[cr4_flag]"r"(cr4_flag),
 			[gdtr]"r"((&gdtr)),
 			[kernel_page4]"r"(kernel_page4),
-			[kernel_start]"r"(kernel_start)
+			[kernel_start]"r"(kernel_start),
+			[memory_offset]"r"(MEMORY_DIRECTMAP_HEAD)
 	); 
 	
 	//多分呼ばれない
