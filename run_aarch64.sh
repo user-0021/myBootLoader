@@ -3,13 +3,10 @@ unset GTK_PATH
 
 #build 
 pmn b aarch64-bootloader
-make all
-pmn b aarch64-kernel
-make all
+make 
 
 #make efi file
 aarch64-elf-objcopy -I elf64-littleaarch64 -O efi-app-aarch64 bootLoader.elf BOOTAA64.EFI
-aarch64-elf-objcopy -I elf64-littleaarch64 -O efi-app-aarch64 kernel.elf kernel.efi
 
 #make disk image
 dd if=/dev/zero of=fat.img bs=1k count=1440
