@@ -14,6 +14,12 @@ typedef struct{
     uint64_t base;
 } __attribute__((packed)) GDTPtr;
 
+
+
+extern void jmp_kernel(EFI_PHYSICAL_ADDRESS gdtptr,EFI_PHYSICAL_ADDRESS page4);
+
+
+
 EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle,EFI_SYSTEM_TABLE *SystemTable){
 	SystemTable->ConOut->ClearScreen(SystemTable->ConOut);
 
@@ -78,7 +84,9 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle,EFI_SYSTEM_TABLE *SystemTable)
 	 * 
 	 */
 
-	SystemTable->BootServices->Stall(1000*100*100);
+
+	//RCX and RDX
+	jmp_kernel((EFI_PHYSICAL_ADDRESS)&gdtr,kernel_page4);
 
 	UINT64 msr_flag = (1 << 8) ;
 	UINT64 cr0_flag = (1 << 31) | (1 << 11);

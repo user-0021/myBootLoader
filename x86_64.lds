@@ -9,6 +9,7 @@ SECTIONS
 	.hash : { *(.hash) }
 	.gnu.hash : { *(.gnu.hash) }
 	. = ALIGN(0x1000);
+
 	.text :
 	{
 		_text = .;
