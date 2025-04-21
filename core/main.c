@@ -16,7 +16,7 @@ typedef struct{
 
 
 
-extern void jmp_kernel(EFI_PHYSICAL_ADDRESS gdtptr,EFI_PHYSICAL_ADDRESS page4);
+extern EFI_PHYSICAL_ADDRESS jmp_kernel(EFI_PHYSICAL_ADDRESS gdtptr,EFI_PHYSICAL_ADDRESS page4);
 
 
 
@@ -86,8 +86,10 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle,EFI_SYSTEM_TABLE *SystemTable)
 
 
 	//RCX and RDX
-	jmp_kernel((EFI_PHYSICAL_ADDRESS)&gdtr,kernel_page4);
+	EFI_PHYSICAL_ADDRESS a = jmp_kernel((EFI_PHYSICAL_ADDRESS)&gdtr,kernel_page4);
+	wcprintf(L"AAAAAAAA:%0x\r\n",a);
 
+	SystemTable->BootServices->Stall(1000*1000*1000);
 	UINT64 msr_flag = (1 << 8) ;
 	UINT64 cr0_flag = (1 << 31) | (1 << 11);
 	UINT64 cr3_flag = 0 & 0xFFF;
