@@ -84,7 +84,7 @@ void print_GUID(EFI_GUID guid){
 		,guid.Data4[0],guid.Data4[1],guid.Data4[2],guid.Data4[3],guid.Data4[4],guid.Data4[5],guid.Data4[6],guid.Data4[7]);
 }
 
-EFI_STATUS init_bootloader(EFI_SYSTEM_TABLE *SystemTable,BOOTLOADER_DATA* data){
+EFI_STATUS init_bootloader(EFI_SYSTEM_TABLE *SystemTable,EFI_HANDLE* imageHandle,BOOTLOADER_DATA* data){
 
 	//Load Configuration Table
 	wcprintf(L"\nLoad Configuration Table\r\n\n");
@@ -162,5 +162,6 @@ EFI_STATUS init_bootloader(EFI_SYSTEM_TABLE *SystemTable,BOOTLOADER_DATA* data){
 		return status;
 	}
 
-	return EFI_SUCCESS;
+
+	return SystemTable->BootServices->ExitBootServices(imageHandle,mapKey);
 }

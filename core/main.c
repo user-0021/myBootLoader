@@ -60,7 +60,7 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle,EFI_SYSTEM_TABLE *SystemTable)
 	}
 
 	//init bootloader
-	if(init_bootloader(SystemTable,&data) != EFI_SUCCESS){
+	if(init_bootloader(SystemTable,ImageHandle,&data) != EFI_SUCCESS){
 		SystemTable->RuntimeServices->ResetSystem(EfiResetShutdown,EFI_SUCCESS,0,NULL);
 	}
 	
@@ -86,53 +86,21 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle,EFI_SYSTEM_TABLE *SystemTable)
 
 
 	//RCX and RDX
-	EFI_PHYSICAL_ADDRESS a = jmp_kernel((EFI_PHYSICAL_ADDRESS)&gdtr,kernel_page4);
-	wcprintf(L"AAAAAAAA:%0x\r\n",a);
+	jmp_kernel((EFI_PHYSICAL_ADDRESS)&gdtr,kernel_page4);
 
-	SystemTable->BootServices->Stall(1000*1000*1000);
-	UINT64 msr_flag = (1 << 8) ;
-	UINT64 cr0_flag = (1 << 31) | (1 << 11);
+
+
 	UINT64 cr3_flag = 0 & 0xFFF;
-	UINT64 cr4_flag = (1 << 5);
-	UINT64 dissable_pageing = ~((1 << 31) | 1);
 	EFI_PHYSICAL_ADDRESS kernel_start = MEMORY_KERNEL_HEAD + 0x1000;
+
+	wcprintf(L"KERNEL:%0x\r\nPAGE4:%0x\r\nGDTP:%0x\r\nOFF:%0x\r\n",kernel_start,kernel_page4,gdt,MEMORY_DIRECTMAP_HEAD);
 	asm volatile(
 
-		"mov $6, %%rbx\n\t"
-		"mov %%cr0, %%rbx\n\t"
-		"and %[dissable_pageing], %%rbx\n\t"
-		"mov %%rbx, %%cr0\n\t"		
-
-		"mov $6, %%rbx\n\t"
-
-		//Set LME (long mode enable) 
-		//Set NXE (Execute Disable bit enable)
-		"mov $0xC0000080, %%rcx\n\t"
-		"rdmsr\n\t"
-		"or %[msr_flag], %%rax\n\t"
-		"wrmsr\n\t"
-
-
-		//Enable PAE
-		// "mov %%cr4, %%rdx\n\t"
-		// "or  %[cr4_flag], %%rdx\n\t"
-		// "mov %%rdx, %%cr4\n\t"
-
-		"mov $6, %%rbx\n\t"
-		"mov $6, %%rbx\n\t"
-		//Set CR3
+		//update memory map
 		"mov %[kernel_page4], %%rax\n\t"
 		"or %[cr3_flag], %%rax\n\t"
   		"mov %%rax, %%cr3\n\t"
-	
-		"mov $6, %%rbx\n\t"
 
-		//Enable paging (and protected mode, if it isn't already active)
-		"mov %%cr0, %%rbx\n\t"
-		"or %[cr0_flag], %%rbx\n\t"
-		"mov %%rbx, %%cr0\n\t"
-
-		"mov $6, %%rbx\n\t"
 		//Now reload the segment registers (CS, DS, SS, etc.) with the appropriate segment selectors...
 		"lgdt (%[gdtr])\n\t"
 		"mov $0x10, %%ax\n\t"
@@ -142,19 +110,15 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle,EFI_SYSTEM_TABLE *SystemTable)
 		"mov %%ax, %%fs\n\t"
 		"mov %%ax, %%gs\n\t"
 
-		"mov $6, %%rbx\n\t"
-
+		"add %[memory_offset], %%rsp\n\t"
 		
 		//Reload CS with a 64-bit code selector by performing a long jmp
 		"pushq $0x08\n\t"
 		"pushq %[kernel_start]\n\t"
 		"lretq\n\t"
+		:
 		:	
-		:	[msr_flag]"r"(msr_flag),
-			[cr0_flag]"r"(cr0_flag),
 			[cr3_flag]"r"(cr3_flag),
-			[cr4_flag]"r"(cr4_flag),
-			[dissable_pageing]"r"(dissable_pageing),
 			[gdtr]"r"((&gdtr)),
 			[kernel_page4]"r"(kernel_page4),
 			[kernel_start]"r"(kernel_start),

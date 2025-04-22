@@ -4,18 +4,14 @@
 .global jmp_kernel
 .type jmp_kernel, @function
 
-
-#define MSR_FLAG (1 << 8)
-#define CR0_FLAG (1 << 31) | (1 << 11)
 #define CR3_FLAG (0 & 0xFFF)
-#define CR4_FLAG (1 << 5)
-#define DISSABLE_FLAG ~(1 << 31)
 
 jmp_kernel:
+
 	//RCX GDTR PTR
 	//RDX PAGE4 ADDRESS
-	pushq %rcx;
-	pushq %rdx;
+	// pushq %rcx;
+	// pushq %rdx;
 
 	// jmp 0x00 ;
 	//disable paging
@@ -53,8 +49,8 @@ jmp_kernel:
 
 
 
-	popq %rdx;
-	popq %rcx;
+	// popq %rdx;
+	// popq %rcx;
 
 	lgdt (%rcx);
 
@@ -64,8 +60,12 @@ jmp_kernel:
 	mov %ax, %ss;
 	mov %ax, %fs;
 	mov %ax, %gs;
-	
-	//jmp 0x08, rdx;
+
 	pushq $0x08;
 	pushq $MEMORY_KERNEL_HEAD+MEMORY_PAGE_SIZE;
 	lretq;
+	// mov $MEMORY_KERNEL_HEAD+MEMORY_PAGE_SIZE, %rax;
+	// jmp %rax;
+
+label:
+	jmp label;

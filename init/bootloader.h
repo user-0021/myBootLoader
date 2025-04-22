@@ -27,4 +27,4 @@ typedef struct
 
 
 EFI_STATUS init_protocol(CONST EFI_HANDLE imageHandle,CONST EFI_SYSTEM_TABLE* system,PROTOCOL_LIST* list);
-EFI_STATUS init_bootloader(EFI_SYSTEM_TABLE *SystemTable,BOOTLOADER_DATA* data);
+EFI_STATUS init_bootloader(EFI_SYSTEM_TABLE *SystemTable,EFI_HANDLE* imageHandle,BOOTLOADER_DATA* data);

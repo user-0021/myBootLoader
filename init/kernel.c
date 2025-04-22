@@ -43,7 +43,7 @@ EFI_STATUS load_kernel(CONST EFI_SYSTEM_TABLE* systemTable,CONST EFI_HANDLE pare
 	wcprintf(L"\n");
 
 
-	EFI_PHYSICAL_ADDRESS pointer = createVirtualMap(systemTable->BootServices,kernelLoadedImage);
+	EFI_PHYSICAL_ADDRESS pointer = createVirtualMap(systemTable->BootServices,list->loadedImage,kernelLoadedImage);
 	if(pointer == (EFI_PHYSICAL_ADDRESS)NULL){
 		return EFI_NOT_READY;
 	}
