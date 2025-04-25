@@ -5,6 +5,7 @@
 
 EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL* stdout = NULL;
 
+#ifndef IGNORE_PRINT
 void wcprintf(CHAR16* fmt,...){
 	if(stdout == NULL)
 		return;
@@ -182,3 +183,5 @@ void wcprintf(CHAR16* fmt,...){
 
     va_end(args); 
 }
+
+#endif

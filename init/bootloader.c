@@ -31,60 +31,13 @@
    ((left).Data4[4] == (right).Data4[4]) && ((left).Data4[5] == (right).Data4[5]) && ((left).Data4[6] == (right).Data4[6]) && ((left).Data4[7] == (right).Data4[7]))
 
 
-
-// #define	EFI_SMBIOS_SLOT_POPULATION_GUID = {03583ff6-cb36-4940-947e-b9b39f4afaf7}
-
-CHAR16* castTypeName(UINT16 type){
-
-	switch (type)
-	{
-	case 0:
-		return L"EfiReservedMemoryType";
-	case 1:
-		return L"EfiLoaderCode";
-	case 2:
-		return L"EfiLoaderData";
-	case 3:
-		return L"EfiBootServicesCode";
-	case 4:
-		return L"EfiBootServicesData";
-	case 5:
-		return L"EfiRuntimeServicesCode";
-	case 6:
-		return L"EfiRuntimeServicesData";
-	case 7:
-		return L"EfiConventionalMemory";
-	case 8:
-		return L"EfiUnusableMemory";
-	case 9:
-		return L"EfiACPIReclaimMemory";
-	case 10:
-		return L"EfiACPIMemoryNVS";
-	case 11:
-		return L"EfiMemoryMappedIO";
-	case 12:
-		return L"EfiMemoryMappedIOPortSpace";
-	case 13:
-		return L"EfiPalCode";
-	case 14:
-		return L"EfiPersistentMemory";
-	case 15:
-		return L"EfiUnacceptedMemoryType";
-	case 16:
-		return L"EfiMaxMemoryType";
-	
-	default:
-		return L"NONE";
-	}
-}
-
 void print_GUID(EFI_GUID guid){
 	wcprintf(L"GUID:%08x-%04x-%04x-%02x%02x%02x%02x%02x%02x%02x%02x\r\n\n"
 		,guid.Data1,guid.Data2,guid.Data3
 		,guid.Data4[0],guid.Data4[1],guid.Data4[2],guid.Data4[3],guid.Data4[4],guid.Data4[5],guid.Data4[6],guid.Data4[7]);
 }
 
-EFI_STATUS init_bootloader(EFI_SYSTEM_TABLE *SystemTable,EFI_HANDLE* imageHandle,BOOTLOADER_DATA* data){
+EFI_STATUS init_bootloader(EFI_SYSTEM_TABLE *SystemTable,BOOTLOADER_DATA* data,UINTN* mmapKey){
 
 	//Load Configuration Table
 	wcprintf(L"\nLoad Configuration Table\r\n\n");
@@ -129,39 +82,12 @@ EFI_STATUS init_bootloader(EFI_SYSTEM_TABLE *SystemTable,EFI_HANDLE* imageHandle
 	}
 
 	if(status == EFI_SUCCESS){
-		UINTN i;
-		UINTN descCount = mapSize / descSize;
-		EFI_MEMORY_DESCRIPTOR* desc = (void*)descripterBuffer;
-
-		wcprintf(L"MemoryMapSize         : 0x%x\r\n",mapSize);
-		wcprintf(L"MemoryDescripterSize  : 0x%x\r\n",descSize);
-		wcprintf(L"MemoryDescripterCount : 0x%x\r\n\n",descCount);
-
-		
-
-		for(i = 0;i < descCount;i++){
-
-			wcprintf(
-				L"MemoryType     : %s\r\n"
-				L"MemoryAddress  : 0x%x\r\n"
-				L"NextAddress    : 0x%x\r\n"
-				L"MemoryVAddress : 0x%x\r\n"
-				L"MemorySize     : 0x%x\r\n"
-				L"Atteribute     : 0x%x\r\n\n"
-				,castTypeName(desc->Type)
-				,desc->PhysicalStart
-				,desc->PhysicalStart + (desc->NumberOfPages<<12)
-				,desc->VirtualStart
-				,desc->NumberOfPages
-				,desc->Attribute);
-
-				desc = (EFI_MEMORY_DESCRIPTOR*)(((UINT8*)desc) + descSize);
-		}
-
+		*mmapKey = mapKey;
+		return status;
 	}else{
+		wcprintf(L"Failed GetMemoryMap: %0x\r\n",(UINT64)status);
 		return status;
 	}
 
-
-	return SystemTable->BootServices->ExitBootServices(imageHandle,mapKey);
+	return EFI_NOT_READY;
 }
