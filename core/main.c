@@ -22,7 +22,7 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle,EFI_SYSTEM_TABLE *SystemTable)
 
 	stdout = SystemTable->ConOut;
 
-	wcprintf(L"Success lunch bootloader%0x\r\n\n");
+	wcprintf(L"Success lunch bootloader\r\n\n");
 	wcprintf(L"Load firmware info\r\n");
 	wcprintf(L"FirmwareVender   : %s\r\n",SystemTable->FirmwareVendor);
 	wcprintf(L"FirmwareRevision : 0x%0x\r\n\n",(UINT64)SystemTable->FirmwareRevision);
@@ -105,6 +105,42 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle,EFI_SYSTEM_TABLE *SystemTable)
 	status = data.protocols.graphicsOut->QueryMode(data.protocols.graphicsOut, data.protocols.graphicsOut->Mode->Mode, &SizeOfInfo, &Info);
 	data.data.Info = *Info;
 
+	UINT64 i;
+	for(i = 0;i < 512;i++){
+		EFI_PHYSICAL_ADDRESS page3 = (*(UINT64*)(void*)(kernel_page4 + (i << 3))) & 0xFFFFFFFFFF000UL;
+		
+		if(page3 != 0){
+			UINT64 j;
+			for(j = 0;j < 512;j++){
+				EFI_PHYSICAL_ADDRESS page2 = (*(UINT64*)(void*)(page3 + (j << 3))) & 0xFFFFFFFFFF000UL;
+				
+				if(page2 != 0){
+
+					UINT64 k;
+					for(k = 0;k < 512;k++){
+						EFI_PHYSICAL_ADDRESS page1 = (*(UINT64*)(void*)(page2 + (k << 3))) & 0xFFFFFFFFFF000UL;
+						
+						if(page1 != 0){
+							
+							UINT64 l;
+							for(l = 0;l < 512;l++){
+								EFI_PHYSICAL_ADDRESS page = (*(UINT64*)(void*)(page1 + (l << 3))) & 0xFFFFFFFFFF000UL;
+								
+								if(page != 0){
+									
+									UINT64 m;
+									for(m = 0;m < 512;m++){//(i << 39) | (j << 30) | (k << 21) | (l << 12) | (m << 3)
+										wcprintf(L"0x%0x : 0x%0x\r\n",(i << 39) | (j << 30) | (k << 21) | (l << 12) | (m << 3),*((UINT64*)(void*)(page)));
+									}
+								}
+							}
+						}
+					}
+					
+				}
+			}
+		}
+	}
 	//Exit Boot Service
 	status = SystemTable->BootServices->ExitBootServices(ImageHandle,mapKey);
 	if(status != EFI_SUCCESS){
@@ -112,6 +148,53 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle,EFI_SYSTEM_TABLE *SystemTable)
 		SystemTable->RuntimeServices->ResetSystem(EfiResetShutdown,EFI_SUCCESS,0,NULL);
 	}
 
+
+
+	while (1)
+	{
+		asm volatile("hlt\n\t");
+	}
+	
+
+	asm volatile("mov %[page4], %%cr3\n\t"::[page4]"r"(kernel_page4));
+	asm volatile("lgdt (%[ptgr])\n\t"::[ptgr]"r"(&gdtr));
+
+	asm volatile("mov $0x10, %ax\n\t");
+	asm volatile("mov %ax, %ds\n\t");
+	asm volatile("mov %ax, %es\n\t");
+	asm volatile("mov %ax, %ss\n\t");
+	asm volatile("mov %ax, %fs\n\t");
+	asm volatile("mov %ax, %gs\n\t");
+
+	// asm volatile("mov %[kernel_head], %%rsp\n\t"::[kernel_head]"r"(MEMORY_KERNEL_HEAD+MEMORY_PAGE_SIZE - 1));
+
+	asm volatile("pushq $0x08\n\t");
+	asm volatile("pushq %[kernel_entry]\n\t"::[kernel_entry]"r"(MEMORY_KERNEL_HEAD+MEMORY_PAGE_SIZE));
+	
+
+	VOID *FrameBufferBase = (void*)data.protocols.graphicsOut->Mode->FrameBufferBase;
+	UINT32 Width = data.data.Info.HorizontalResolution;
+	UINT32 Height = data.data.Info.VerticalResolution;
+	UINT32 PixelsPerScanLine = data.data.Info.PixelsPerScanLine;
+
+	EFI_GRAPHICS_OUTPUT_BLT_PIXEL *FB = (EFI_GRAPHICS_OUTPUT_BLT_PIXEL *)FrameBufferBase;
+
+	// 画面を真っ赤に塗る
+	for (UINTN y = 0; y < Height; y++) {
+		for (UINTN x = 0; x < Width; x++) {
+			FB[y * PixelsPerScanLine + x].Red = 0;
+			FB[y * PixelsPerScanLine + x].Green = 255;
+			FB[y * PixelsPerScanLine + x].Blue = 0;
+			FB[y * PixelsPerScanLine + x].Reserved = 0;
+		}
+	}
+
+
+	while (1)
+	{
+		asm volatile("hlt\n\t");
+	}
+	
 	
 	//RCX and RDX
 	jmp_kernel((EFI_PHYSICAL_ADDRESS)&gdtr,kernel_page4,&data);
