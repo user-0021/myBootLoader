@@ -21,15 +21,17 @@ jmp_kernel:
 	mov %ax, %fs;
 	mov %ax, %gs;
 
+	mov %r8,%rcx;
 	pushq $0x08;
-	pushq __jmp;
+	pushq $MEMORY_KERNEL_HEAD+MEMORY_PAGE_SIZE;
+	lretq;
+
+	pushq $0x08;
 	// lretq;
 
-__jmp:
-	hlt;
-	jmp __jmp;
-	mov %r8,%rcx;
-	lretq;
+	__jmp:
+		hlt;
+		jmp __jmp;
 
 	mov $MEMORY_KERNEL_HEAD+MEMORY_PAGE_SIZE, %rax;
 	jmp *%rax;

@@ -42,7 +42,7 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle,EFI_SYSTEM_TABLE *SystemTable)
 
 	GDTPtr gdtr = {
 		.limit = (0x08 * 3) - 1,
-		.base = gdt
+		.base = gdt + MEMORY_DIRECTMAP_HEAD
 	};
 
 	BOOTLOADER_DATA data = {0};
@@ -153,6 +153,8 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle,EFI_SYSTEM_TABLE *SystemTable)
 		SystemTable->RuntimeServices->ResetSystem(EfiResetShutdown,EFI_SUCCESS,0,NULL);
 	}
 
+	jmp_kernel((EFI_PHYSICAL_ADDRESS)&gdtr,kernel_page4,&data);
+	
 	asm volatile("mov %[page4], %%cr3\n\t"::[page4]"r"(kernel_page4));
 	asm volatile("lgdt (%[ptgr])\n\t"::[ptgr]"r"(&gdtr));
 
