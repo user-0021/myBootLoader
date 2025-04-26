@@ -60,6 +60,10 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle,EFI_SYSTEM_TABLE *SystemTable)
 		SystemTable->RuntimeServices->ResetSystem(EfiResetShutdown,EFI_SUCCESS,0,NULL);
 	}
 
+	EFI_PHYSICAL_ADDRESS stack;
+	status = SystemTable->BootServices->AllocatePages(AllocateAnyPages,EfiBootServicesData,5,&stack);
+	stack += (0x5000 - 1) + MEMORY_DIRECTMAP_HEAD;
+
 	//init bootloader
 	UINTN mapKey = 0;
 	if(init_bootloader(SystemTable,&data,&mapKey) != EFI_SUCCESS){
@@ -105,56 +109,49 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle,EFI_SYSTEM_TABLE *SystemTable)
 	status = data.protocols.graphicsOut->QueryMode(data.protocols.graphicsOut, data.protocols.graphicsOut->Mode->Mode, &SizeOfInfo, &Info);
 	data.data.Info = *Info;
 
-	UINT64 i;
-	for(i = 0;i < 512;i++){
-		EFI_PHYSICAL_ADDRESS page3 = (*(UINT64*)(void*)(kernel_page4 + (i << 3))) & 0xFFFFFFFFFF000UL;
+	// UINT64 i;
+	// for(i = 0;i < 512;i++){
+	// 	EFI_PHYSICAL_ADDRESS page3 = (*(UINT64*)(void*)(kernel_page4 + (i << 3))) & 0xFFFFFFFFFF000UL;
 		
-		if(page3 != 0){
-			UINT64 j;
-			for(j = 0;j < 512;j++){
-				EFI_PHYSICAL_ADDRESS page2 = (*(UINT64*)(void*)(page3 + (j << 3))) & 0xFFFFFFFFFF000UL;
+	// 	if(page3 != 0){
+	// 		UINT64 j;
+	// 		for(j = 0;j < 512;j++){
+	// 			EFI_PHYSICAL_ADDRESS page2 = (*(UINT64*)(void*)(page3 + (j << 3))) & 0xFFFFFFFFFF000UL;
 				
-				if(page2 != 0){
+	// 			if(page2 != 0){
 
-					UINT64 k;
-					for(k = 0;k < 512;k++){
-						EFI_PHYSICAL_ADDRESS page1 = (*(UINT64*)(void*)(page2 + (k << 3))) & 0xFFFFFFFFFF000UL;
+	// 				UINT64 k;
+	// 				for(k = 0;k < 512;k++){
+	// 					EFI_PHYSICAL_ADDRESS page1 = (*(UINT64*)(void*)(page2 + (k << 3))) & 0xFFFFFFFFFF000UL;
 						
-						if(page1 != 0){
+	// 					if(page1 != 0){
 							
-							UINT64 l;
-							for(l = 0;l < 512;l++){
-								EFI_PHYSICAL_ADDRESS page = (*(UINT64*)(void*)(page1 + (l << 3))) & 0xFFFFFFFFFF000UL;
+	// 						UINT64 l;
+	// 						for(l = 0;l < 512;l++){
+	// 							EFI_PHYSICAL_ADDRESS page = (*(UINT64*)(void*)(page1 + (l << 3))) & 0xFFFFFFFFFF000UL;
 								
-								if(page != 0){
+	// 							if(page != 0){
 									
-									UINT64 m;
-									for(m = 0;m < 512;m++){//(i << 39) | (j << 30) | (k << 21) | (l << 12) | (m << 3)
-										wcprintf(L"0x%0x : 0x%0x\r\n",(i << 39) | (j << 30) | (k << 21) | (l << 12) | (m << 3),*((UINT64*)(void*)(page)));
-									}
-								}
-							}
-						}
-					}
+	// 								UINT64 m = 0;
+	// 								// for(m = 0;m < 512;m++){//(i << 39) | (j << 30) | (k << 21) | (l << 12) | (m << 3)
+	// 									wcprintf(L"0x%0x : 0x%0x\r\n",(i << 39) | (j << 30) | (k << 21) | (l << 12) | (m << 3),page);
+	// 								// }
+	// 							}
+	// 						}
+	// 					}
+	// 				}
 					
-				}
-			}
-		}
-	}
+	// 			}
+	// 		}
+	// 	}
+	// }
+
 	//Exit Boot Service
 	status = SystemTable->BootServices->ExitBootServices(ImageHandle,mapKey);
 	if(status != EFI_SUCCESS){
 		SystemTable->BootServices->Stall(1000*1000*3);
 		SystemTable->RuntimeServices->ResetSystem(EfiResetShutdown,EFI_SUCCESS,0,NULL);
 	}
-
-
-
-	while (1)
-	{
-		asm volatile("hlt\n\t");
-	}
-	
 
 	asm volatile("mov %[page4], %%cr3\n\t"::[page4]"r"(kernel_page4));
 	asm volatile("lgdt (%[ptgr])\n\t"::[ptgr]"r"(&gdtr));
@@ -165,11 +162,18 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle,EFI_SYSTEM_TABLE *SystemTable)
 	asm volatile("mov %ax, %ss\n\t");
 	asm volatile("mov %ax, %fs\n\t");
 	asm volatile("mov %ax, %gs\n\t");
-
-	// asm volatile("mov %[kernel_head], %%rsp\n\t"::[kernel_head]"r"(MEMORY_KERNEL_HEAD+MEMORY_PAGE_SIZE - 1));
+	EFI_PHYSICAL_ADDRESS b_data = (EFI_PHYSICAL_ADDRESS)((void*)(&data));
+	b_data += MEMORY_DIRECTMAP_HEAD;
+	// data.protocols.graphicsOut->Mode->FrameBufferBase += MEMORY_DIRECTMAP_HEAD;
+	data.protocols.graphicsOut->Mode = ((void*)data.protocols.graphicsOut->Mode) + MEMORY_DIRECTMAP_HEAD;
+	data.protocols.graphicsOut = ((void*)data.protocols.graphicsOut) + MEMORY_DIRECTMAP_HEAD;
+	
+	asm volatile("mov %[kernel_head], %%rsp\n\t"::[kernel_head]"r"(stack));
+	asm volatile("mov %[boot_data], %%rcx\n\t"::[boot_data]"r"(b_data));
 
 	asm volatile("pushq $0x08\n\t");
 	asm volatile("pushq %[kernel_entry]\n\t"::[kernel_entry]"r"(MEMORY_KERNEL_HEAD+MEMORY_PAGE_SIZE));
+	asm volatile("lretq\n\t");
 	
 
 	VOID *FrameBufferBase = (void*)data.protocols.graphicsOut->Mode->FrameBufferBase;
