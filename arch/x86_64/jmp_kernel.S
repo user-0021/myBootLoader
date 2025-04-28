@@ -6,6 +6,10 @@
 
 #define CR3_FLAG (0 & 0xFFF)
 
+__jmp:
+	hlt;
+	jmp __jmp;
+
 jmp_kernel:
 	//Set CR3
 	or CR3_FLAG, %rdx;
@@ -22,16 +26,16 @@ jmp_kernel:
 	mov %ax, %gs;
 
 	mov %r8,%rcx;
+	mov $MEMORY_KERNEL_HEAD, %rax;
+	add $MEMORY_PAGE_SIZE, %rax;
 	pushq $0x08;
-	pushq $MEMORY_KERNEL_HEAD+MEMORY_PAGE_SIZE;
+	pushq %rax;
+	// jmp __jmp;
 	lretq;
 
-	pushq $0x08;
+	// pushq $0x08;
 	// lretq;
 
-	__jmp:
-		hlt;
-		jmp __jmp;
 
 	mov $MEMORY_KERNEL_HEAD+MEMORY_PAGE_SIZE, %rax;
 	jmp *%rax;

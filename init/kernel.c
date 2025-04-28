@@ -34,6 +34,16 @@ EFI_STATUS load_kernel(CONST EFI_SYSTEM_TABLE* systemTable,CONST EFI_HANDLE pare
 	EFI_GUID loadedImageProtocolGUID = EFI_LOADED_IMAGE_PROTOCOL_GUID;
 	EFI_LOADED_IMAGE_PROTOCOL* kernelLoadedImage;
 	OPEN_PROTOCOL(systemTable,status,kernelImage,loadedImageProtocolGUID,kernelLoadedImage,parent);
+	EFI_PHYSICAL_ADDRESS copy;
+	status = systemTable->BootServices->AllocatePages(AllocateAnyPages,EfiRuntimeServicesCode,kernelLoadedImage->ImageSize,&copy);
+
+	if(status == EFI_SUCCESS){
+		wcprintf(L"...Success\r\n");
+	}
+	else{
+		wcprintf(L"...Failed(ErrorCode:0x%x)\r\n",(UINT64)status);\
+		return status;
+	}
 
 	wcprintf(L"Kernel image base:0x%0x\r\n",(UINTN)kernelLoadedImage->ImageBase);
 	wcprintf(L"Kernel image size:0x%0x\r\n",(UINTN)kernelLoadedImage->ImageSize);

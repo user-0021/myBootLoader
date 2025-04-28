@@ -168,7 +168,7 @@ EFI_STATUS allocatePageTableLinear(EFI_BOOT_SERVICES* bootServices,EFI_PHYSICAL_
 		//calc
 		UINT64 lowerAlocateSize = ((allocateSize >> 27) & 0x1FF) ? 0x7FFFFFF : (allocateSize & 0x7FFFFFF);
 
-		*((UINT64*)(VOID*)writeItr) = (flag & (~0x000FFFFFFFFFF000UL)) | ENTRY_PHYSICAL_ADDRESS(pageItr);
+		*((UINT64*)(VOID*)writeItr) = ENTRY_PRESENT(1) | ENTRY_PHYSICAL_ADDRESS(pageItr);
 
 		//calc offset
 		if(i == 0)
@@ -207,7 +207,7 @@ EFI_STATUS allocateLev2PageTableLinear(EFI_BOOT_SERVICES* bootServices,EFI_PHYSI
 		//calc
 		UINT64 lowerAlocateSize = ((allocateSize >> 18) & 0x1FF) ? 0x3FFFF : (allocateSize & 0x3FFFF);
 
-		*((UINT64*)(VOID*)writeItr) = (flag & (~0x000FFFFFFFFFF000UL)) | ENTRY_PHYSICAL_ADDRESS(pageItr);
+		*((UINT64*)(VOID*)writeItr) = ENTRY_PRESENT(1) | ENTRY_PHYSICAL_ADDRESS(pageItr);
 		
 		if(i == 0)
 			status = allocateLev1PageTableLinear(bootServices,pageItr,virtualBegin,readItr,lowerAlocateSize,flag);
@@ -245,7 +245,7 @@ EFI_STATUS allocateLev1PageTableLinear(EFI_BOOT_SERVICES* bootServices,EFI_PHYSI
 		//calc
 		UINT64 lowerAlocateSize = ((allocateSize >> 9) & 0x1FF) ? 0x1FF : (allocateSize & 0x1FF);
 
-		*((UINT64*)(VOID*)writeItr) = (flag & (~0x000FFFFFFFFFF000UL)) | ENTRY_PHYSICAL_ADDRESS(pageItr);
+		*((UINT64*)(VOID*)writeItr) = ENTRY_PRESENT(1) | ENTRY_PHYSICAL_ADDRESS(pageItr);
 
 		if(i == 0)
 			status = allocateLev0PageTableLinear(pageItr,virtualBegin,readItr,lowerAlocateSize,flag);
