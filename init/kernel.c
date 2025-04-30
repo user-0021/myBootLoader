@@ -1,4 +1,4 @@
-#include <init/kernel.h>
+#include <init/bootloader.h>
 #include <uefi/lib/consoleio.h>
 #include <uefi/protocol/loaded_image.h>
 #include <mem/virtualAddress.h>
@@ -13,15 +13,15 @@
 		return status;\
 	}
 
-EFI_STATUS load_kernel(CONST EFI_SYSTEM_TABLE* systemTable,CONST EFI_HANDLE parent,CONST PROTOCOL_LIST* list,CONST CHAR16* kernel_file,EFI_PHYSICAL_ADDRESS* kernelPage4){
+EFI_STATUS init_kernel(CONST EFI_SYSTEM_TABLE* systemTable,CONST EFI_HANDLE imageHandle,BOOT_LOADER_DATA* data,CONST CHAR16* kernel_file){
 	wcprintf(L"\nTry load kernel\r\n");
 
-	EFI_DEVICE_PATH_PROTOCOL* kernelPath	= list->devPathFromText->ConvertTextToDevicPath(kernel_file);
-	EFI_DEVICE_PATH_PROTOCOL* completePath	= list->devPathUtilities->AppendDevicePath(list->devPath,kernelPath);
-	wcprintf(L"Kernel path:%s\r\n",list->devPathToText->ConvertDevicePathToText(completePath,0,0));
+	EFI_DEVICE_PATH_PROTOCOL* kernelPath	= data->protocols.devPathFromText->ConvertTextToDevicPath(kernel_file);
+	EFI_DEVICE_PATH_PROTOCOL* completePath	= data->protocols.devPathUtilities->AppendDevicePath(data->protocols.devPath,kernelPath);
+	wcprintf(L"Kernel path:%s\r\n",data->protocols.devPathToText->ConvertDevicePathToText(completePath,0,0));
 
 	EFI_HANDLE kernelImage;
-	EFI_STATUS status = systemTable->BootServices->LoadImage(FALSE,parent,completePath,NULL,0,&kernelImage);
+	EFI_STATUS status = systemTable->BootServices->LoadImage(FALSE,imageHandle,completePath,NULL,0,&kernelImage);
 	
 	if(status == EFI_SUCCESS)
 		wcprintf(L"...Success\r\n");\
@@ -33,31 +33,15 @@ EFI_STATUS load_kernel(CONST EFI_SYSTEM_TABLE* systemTable,CONST EFI_HANDLE pare
 	wcprintf(L"\n\nTry loaded kernel infomation\r\n");
 	EFI_GUID loadedImageProtocolGUID = EFI_LOADED_IMAGE_PROTOCOL_GUID;
 	EFI_LOADED_IMAGE_PROTOCOL* kernelLoadedImage;
-	OPEN_PROTOCOL(systemTable,status,kernelImage,loadedImageProtocolGUID,kernelLoadedImage,parent);
-	EFI_PHYSICAL_ADDRESS copy;
-	status = systemTable->BootServices->AllocatePages(AllocateAnyPages,EfiRuntimeServicesCode,kernelLoadedImage->ImageSize,&copy);
-
-	if(status == EFI_SUCCESS){
-		wcprintf(L"...Success\r\n");
-	}
-	else{
-		wcprintf(L"...Failed(ErrorCode:0x%x)\r\n",(UINT64)status);\
-		return status;
-	}
-
-	wcprintf(L"Kernel image base:0x%0x\r\n",(UINTN)kernelLoadedImage->ImageBase);
-	wcprintf(L"Kernel image size:0x%0x\r\n",(UINTN)kernelLoadedImage->ImageSize);
-	wcprintf(L"Kernel image code type:0x%0x\r\n",(UINTN)kernelLoadedImage->ImageCodeType);
-	wcprintf(L"Kernel image data type:0x%0x\r\n",(UINTN)kernelLoadedImage->ImageDataType);
+	OPEN_PROTOCOL(systemTable,status,kernelImage,loadedImageProtocolGUID,kernelLoadedImage,imageHandle);
 
 	wcprintf(L"\n");
 
 
-	EFI_PHYSICAL_ADDRESS pointer = createVirtualMap(systemTable->BootServices,list->bootLoaderImage,kernelLoadedImage);
-	if(pointer == (EFI_PHYSICAL_ADDRESS)NULL){
+	status = createVirtualMap(systemTable->BootServices,data->protocols.bootLoaderImage,kernelLoadedImage,data);
+	if(status != EFI_SUCCESS){
 		return EFI_NOT_READY;
 	}
-	*kernelPage4 = pointer;
 
 	return EFI_SUCCESS;
 }

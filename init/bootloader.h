@@ -23,16 +23,27 @@ typedef struct
 
 typedef struct
 {
-	EFI_GRAPHICS_OUTPUT_MODE_INFORMATION Info;
+	EFI_GRAPHICS_OUTPUT_MODE_INFORMATION gInfo;
+	EFI_PHYSICAL_ADDRESS screenBuffer;
 } DATA_LIST;
 
 typedef struct
 {
-	PROTOCOL_LIST protocols;
 	TABLE_LIST tables;
 	DATA_LIST data;
-} BOOTLOADER_DATA;
+} KERNEL_INFO;
+
+#ifdef __x86_64__
+typedef struct
+{
+	PROTOCOL_LIST protocols;
+	EFI_PHYSICAL_ADDRESS gdtptr;
+	EFI_PHYSICAL_ADDRESS page4;
+	EFI_PHYSICAL_ADDRESS kernelEntry;
+} BOOT_LOADER_DATA;
+#endif
 
 
-EFI_STATUS init_protocol(CONST EFI_HANDLE imageHandle,CONST EFI_SYSTEM_TABLE* system,PROTOCOL_LIST* list);
-EFI_STATUS init_bootloader(EFI_SYSTEM_TABLE *SystemTable,BOOTLOADER_DATA* data,UINTN* mmapKey);
+EFI_STATUS init_bootloader(CONST EFI_SYSTEM_TABLE *SystemTable,CONST EFI_HANDLE imageHandle,KERNEL_INFO* info);
+EFI_STATUS init_protocol  (CONST EFI_SYSTEM_TABLE* systemTable,CONST EFI_HANDLE imageHandle,BOOT_LOADER_DATA* data);
+EFI_STATUS init_kernel    (CONST EFI_SYSTEM_TABLE* systemTable,CONST EFI_HANDLE imageHandle,BOOT_LOADER_DATA* data,CONST CHAR16* kernel_file); 

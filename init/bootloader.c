@@ -37,7 +37,7 @@ void print_GUID(EFI_GUID guid){
 		,guid.Data4[0],guid.Data4[1],guid.Data4[2],guid.Data4[3],guid.Data4[4],guid.Data4[5],guid.Data4[6],guid.Data4[7]);
 }
 
-EFI_STATUS init_bootloader(EFI_SYSTEM_TABLE *SystemTable,BOOTLOADER_DATA* data,UINTN* mmapKey){
+EFI_STATUS init_bootloader(CONST EFI_SYSTEM_TABLE *SystemTable,CONST EFI_HANDLE imageHandle,KERNEL_INFO* info){
 
 	//Load Configuration Table
 	wcprintf(L"\nLoad Configuration Table\r\n\n");
@@ -46,16 +46,16 @@ EFI_STATUS init_bootloader(EFI_SYSTEM_TABLE *SystemTable,BOOTLOADER_DATA* data,U
 	for(i = 0;i < SystemTable->NumberOfTableEntries;i++){
 		if(GUID_EQ(SystemTable->ConfigurationTable[i].VendorGuid,(EFI_GUID)EFI_ACPI_20_TABLE_GUID)){
 			wcprintf(L"Tabletype:ACPI_20_TABLE\r\n");
-			data->tables.acpi20Table = SystemTable->ConfigurationTable[i].VendorTable;
+			info->tables.acpi20Table = SystemTable->ConfigurationTable[i].VendorTable;
 		}else if(GUID_EQ(SystemTable->ConfigurationTable[i].VendorGuid,(EFI_GUID)EFI_ACPI_TABLE_GUID)){
 			wcprintf(L"Tabletype:ACPI_TABLE\r\n");
-			data->tables.acpiTable = SystemTable->ConfigurationTable[i].VendorTable;
+			info->tables.acpiTable = SystemTable->ConfigurationTable[i].VendorTable;
 		}else if(GUID_EQ(SystemTable->ConfigurationTable[i].VendorGuid,(EFI_GUID)EFI_SMBIOS3_TABLE_GUID)){
 			wcprintf(L"Tabletype:SMBIOS3_TABLE_GUID\r\n");
-			data->tables.smBios3Table = SystemTable->ConfigurationTable[i].VendorTable;
+			info->tables.smBios3Table = SystemTable->ConfigurationTable[i].VendorTable;
 		}else if(GUID_EQ(SystemTable->ConfigurationTable[i].VendorGuid,(EFI_GUID)EFI_SMBIOS_TABLE_GUID)){
 			wcprintf(L"Tabletype:SMBIOS_TABLE_GUID\r\n");
-			data->tables.smBiosTable = SystemTable->ConfigurationTable[i].VendorTable;
+			info->tables.smBiosTable = SystemTable->ConfigurationTable[i].VendorTable;
 		}else{
 			wcprintf(L"Tabletype:unknow\r\n");
 		}
@@ -63,7 +63,7 @@ EFI_STATUS init_bootloader(EFI_SYSTEM_TABLE *SystemTable,BOOTLOADER_DATA* data,U
 	}
 
 	//check table
-	if((data->tables.acpiTable == NULL && data->tables.acpi20Table == NULL) || (data->tables.smBiosTable == NULL && data->tables.smBios3Table == NULL)){
+	if((info->tables.acpiTable == NULL && info->tables.acpi20Table == NULL) || (info->tables.smBiosTable == NULL && info->tables.smBios3Table == NULL)){
 		return EFI_NOT_FOUND;
 	}
 
@@ -72,6 +72,7 @@ EFI_STATUS init_bootloader(EFI_SYSTEM_TABLE *SystemTable,BOOTLOADER_DATA* data,U
 	UINT32 descVer;
 	UINT8* descripterBuffer;
 
+	//Get MemoryMap
 	EFI_STATUS status = SystemTable->BootServices->GetMemoryMap(&mapSize,(void*)descripterBuffer,&mapKey,&descSize,&descVer);
 	if(status == EFI_BUFFER_TOO_SMALL){
 		mapSize = (mapSize & (~(UINTN)0xFFF)) + 0x2000;
@@ -81,9 +82,10 @@ EFI_STATUS init_bootloader(EFI_SYSTEM_TABLE *SystemTable,BOOTLOADER_DATA* data,U
 			status = SystemTable->BootServices->GetMemoryMap(&mapSize,(void*)descripterBuffer,&mapKey,&descSize,&descVer);
 	}
 
+	//Faile Check
 	if(status == EFI_SUCCESS){
-		*mmapKey = mapKey;
-		return status;
+		//Exit Boot Service
+		return SystemTable->BootServices->ExitBootServices(imageHandle,mapKey);
 	}else{
 		wcprintf(L"Failed GetMemoryMap: %0x\r\n",(UINT64)status);
 		return status;

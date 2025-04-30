@@ -30,7 +30,7 @@ VOID EFIAPI ApHalt(__attribute__ ((__unused__)) VOID *Buffer) {
 }
 	
 
-EFI_STATUS init_protocol(CONST EFI_HANDLE imageHandle,CONST EFI_SYSTEM_TABLE* system,PROTOCOL_LIST* list){
+EFI_STATUS init_protocol(CONST EFI_SYSTEM_TABLE* systemTable,CONST EFI_HANDLE imageHandle,BOOT_LOADER_DATA* data){
 	//const value
 	CHAR16 openMsg[] = L"Open %s\r\n";
 	CHAR16 locateMsg[] = L"Find %s\r\n";
@@ -42,10 +42,10 @@ EFI_STATUS init_protocol(CONST EFI_HANDLE imageHandle,CONST EFI_SYSTEM_TABLE* sy
 	EFI_GUID loadedImageGUID = EFI_LOADED_IMAGE_PROTOCOL_GUID;
 
 	wcprintf(openMsg,L"EFI_LOADED_IMAGE_PROTOCOL");
-	OPEN_PROTOCOL(system,status,imageHandle,loadedImageGUID,list->bootLoaderImage,imageHandle);
+	OPEN_PROTOCOL(systemTable,status,imageHandle,loadedImageGUID,data->protocols.bootLoaderImage,imageHandle);
 
 	wcprintf(openMsg,L"EFI_DEVICE_PATH_PROTOCOL");
-	OPEN_PROTOCOL(system,status,list->bootLoaderImage->DeviceHandle,devicePathGUID,list->devPath,imageHandle);
+	OPEN_PROTOCOL(systemTable,status,data->protocols.bootLoaderImage->DeviceHandle,devicePathGUID,data->protocols.devPath,imageHandle);
 
 	//Locate protocol
 	wcprintf(L"\nTry find protocols:\r\n");
@@ -56,23 +56,24 @@ EFI_STATUS init_protocol(CONST EFI_HANDLE imageHandle,CONST EFI_SYSTEM_TABLE* sy
 	EFI_GUID mpServicesGUID = EFI_MP_SERVICES_PROTOCOL_GUID;
 	
 	wcprintf(locateMsg,L"EFI_DEVICE_PATH_TO_TEXT_PROTOCOL");
-	LOCATE_PROTOCOL(system,status,devicePathToTextGUID,list->devPathToText);
+	LOCATE_PROTOCOL(systemTable,status,devicePathToTextGUID,data->protocols.devPathToText);
 
 	wcprintf(locateMsg,L"EFI_DEVICE_PATH_FROM_TEXT_PROTOCOL");
-	LOCATE_PROTOCOL(system,status,devicePathFromTextGUID,list->devPathFromText);
+	LOCATE_PROTOCOL(systemTable,status,devicePathFromTextGUID,data->protocols.devPathFromText);
 
 	wcprintf(locateMsg,L"EFI_DEVICE_PATH_UTILITIES_PROTOCOL");
-	LOCATE_PROTOCOL(system,status,devicePathUtilitiesGUID,list->devPathUtilities);
+	LOCATE_PROTOCOL(systemTable,status,devicePathUtilitiesGUID,data->protocols.devPathUtilities);
 
 	wcprintf(locateMsg,L"EFI_GRAPHICS_OUTPUT_PROTOCOL");
-	LOCATE_PROTOCOL(system,status,graphicsOutputGUID,list->graphicsOut);
+	LOCATE_PROTOCOL(systemTable,status,graphicsOutputGUID,data->protocols.graphicsOut);
 
 	
+	//一旦他のコアは動作をさせない
     EFI_MP_SERVICES_PROTOCOL *MpServices;
     UINTN ProcessorCount;
     UINTN EnabledProcessorCount;
 	wcprintf(openMsg,L"EFI_MP_SERVICES_PROTOCOL");
-	LOCATE_PROTOCOL(system,status,mpServicesGUID,MpServices);
+	LOCATE_PROTOCOL(systemTable,status,mpServicesGUID,MpServices);
 
     // プロセッサ数を取得
     status = MpServices->GetNumberOfProcessors(MpServices, &ProcessorCount, &EnabledProcessorCount);
