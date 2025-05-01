@@ -72,8 +72,6 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle,EFI_SYSTEM_TABLE *SystemTable)
 		SystemTable->RuntimeServices->ResetSystem(EfiResetShutdown,EFI_SUCCESS,0,NULL);
 	}
 
-	init_cpu(data.page4);
-
 	//jmp kernel
 	jmp_kernel(&data,&info);
 
