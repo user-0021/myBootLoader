@@ -1,6 +1,6 @@
 #include <kernel/mem/type.h>
 #include <uefi/lib/consoleio.h>
-#include <init/bootloader.h>
+#include <init/init.h>
 
 #define EFI_ACPI_20_TABLE_GUID \
   {0x8868e871,0xe4f1,0x11d3,\

@@ -8,7 +8,7 @@
 #ifndef __ASSEMBLER__
 #include <uefi/uefi.h>
 #include <uefi/protocol/loaded_image.h>
-#include <init/bootloader.h>
+#include <init/init.h>
 
 
 EFI_STATUS createVirtualMap(EFI_BOOT_SERVICES* bootService,EFI_LOADED_IMAGE_PROTOCOL* bootloader,EFI_LOADED_IMAGE_PROTOCOL* kernel,BOOT_LOADER_DATA* data);

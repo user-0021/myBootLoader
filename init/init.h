@@ -43,6 +43,7 @@ typedef struct
 } BOOT_LOADER_DATA;
 #endif
 
+extern void init_cpu(EFI_PHYSICAL_ADDRESS page4);
 
 EFI_STATUS init_bootloader(CONST EFI_SYSTEM_TABLE *SystemTable,CONST EFI_HANDLE imageHandle,KERNEL_INFO* info);
 EFI_STATUS init_protocol  (CONST EFI_SYSTEM_TABLE* systemTable,CONST EFI_HANDLE imageHandle,BOOT_LOADER_DATA* data);

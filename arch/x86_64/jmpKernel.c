@@ -1,5 +1,5 @@
 #include <uefi/uefi_defined.h>
-#include <init/bootloader.h>
+#include <init/init.h>
 
 VOID jmp_kernel(BOOT_LOADER_DATA* data,KERNEL_INFO* info){
 	

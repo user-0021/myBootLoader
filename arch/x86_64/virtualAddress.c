@@ -175,13 +175,17 @@ EFI_STATUS createVirtualMap(EFI_BOOT_SERVICES* bootServices,EFI_LOADED_IMAGE_PRO
 	((long long *)gdt)[0] = 0x0000000000000000;
 	((long long *)gdt)[1] = 0x00af9a000000ffff;
 	((long long *)gdt)[2] = 0x00cf93000000ffff;
+	((long long *)gdt)[3] = 0x00affa000000ffff;
+	((long long *)gdt)[4] = 0x00cff3000000ffff;
+	((long long *)gdt)[5] = 0x00cf9a000000ffff;
+	((long long *)gdt)[6] = 0x00cf93000000ffff;
 
-	*(GDT_PTR*)(void*)(gdt + 0x08 * 3) = (GDT_PTR){
-		.limit = (0x08 * 3) - 1,
+	*(GDT_PTR*)(void*)(gdt + 0x08 * 7) = (GDT_PTR){
+		.limit = (0x08 * 7) - 1,
 		.base = gdt
 	};
 
-	data->gdtptr = gdt + 0x08 * 3;
+	data->gdtptr = gdt + 0x08 * 7;
 	data->page4 = lev4_page;
 	data->kernelEntry = MEMORY_KERNEL_HEAD + MEMORY_PAGE_SIZE;
 

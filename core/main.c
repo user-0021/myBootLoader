@@ -1,6 +1,6 @@
 #include <uefi/uefi.h>
 #include <uefi/lib/consoleio.h>
-#include <init/bootloader.h>
+#include <init/init.h>
 #include <mem/virtualAddress.h>
 
 #include "config.h"
@@ -71,6 +71,8 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle,EFI_SYSTEM_TABLE *SystemTable)
 		SystemTable->BootServices->Stall(1000*1000*3);
 		SystemTable->RuntimeServices->ResetSystem(EfiResetShutdown,EFI_SUCCESS,0,NULL);
 	}
+
+	init_cpu(data.page4);
 
 	//jmp kernel
 	jmp_kernel(&data,&info);

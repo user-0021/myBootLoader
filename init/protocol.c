@@ -1,4 +1,4 @@
-#include <init/bootloader.h>
+#include <init/init.h>
 #include <uefi/lib/consoleio.h>
 #include <uefi/protocol/device.h>
 #include <uefi/protocol/mp.h>
