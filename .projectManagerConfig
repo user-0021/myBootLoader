@@ -1,2 +1,2 @@
 [x86_64]
-TARGET = x86_64-bootloader
+TARGET = x86_64-bootloader x86_64-init_cpu
