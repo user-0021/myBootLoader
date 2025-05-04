@@ -11,21 +11,21 @@ VOID jmp_kernel(BOOT_LOADER_DATA* data,KERNEL_INFO* info){
 	
 	asm volatile(
 
-		// SET CR4
-		"mov %%cr4, %%rax\n\t"
-		"or %[cr4_flag], %%rax\n\t"
-		"mov %%rax, %%cr4\n\t"
+		// // SET CR4
+		// "mov %%cr4, %%rax\n\t"
+		// "or %[cr4_flag], %%rax\n\t"
+		// "mov %%rax, %%cr4\n\t"
 
-		// Set LME (long mode enable)
-		"mov $0xC0000080, %%rcx\n\t"
-		"rdmsr\n\t"
-		"or %[msr_flag],%%rax\n\t"
-		"wrmsr\n\t"
+		// // Set LME (long mode enable)
+		// "mov $0xC0000080, %%rcx\n\t"
+		// "rdmsr\n\t"
+		// "or %[msr_flag],%%rax\n\t"
+		// "wrmsr\n\t"
 
-		// Set CR0
-		"mov %%cr0, %%rbx\n\t" 
-		"or %[cr0_flag], %%rbx\n\t"
-		"mov %%rbx, %%cr0\n\t" 
+		// // Set CR0
+		// "mov %%cr0, %%rbx\n\t" 
+		// "or %[cr0_flag], %%rbx\n\t"
+		// "mov %%rbx, %%cr0\n\t" 
 
 		//load page table
 		"mov %[page4], %%cr3\n\t"

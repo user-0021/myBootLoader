@@ -1,0 +1,63 @@
+[x86_64-bootloader]
+
+#Project info
+CC = x86_64-elf-gcc
+C_FLAG = -nostdlib -shared -Wl\,-T\,x86_64.lds -Wl\,-Bsymbolic -Wl\,-znocombreloc -lgcc 
+OBJ_FLAG = -ffreestanding -fpic -fno-stack-protector -fshort-wchar -mno-red-zone -mgeneral-regs-only -mabi\=ms -Wall -Wextra -Wpedantic -O3 
+LIBRARY=
+SOURCE_DIR = core init uefi/lib arch/x86_64
+INCLUDE_DIR = .
+OBJ_DIR = obj
+LIB =
+
+
+#Output
+OUTPUT = bootLoader.elf
+
+[aarch64-bootloader]
+
+#Project info
+CC = aarch64-elf-gcc
+C_FLAG = -nostdlib -shared -Wl\,-T\,aarch64.lds -Wl\,-Bsymbolic -Wl\,-znocombreloc -lgcc
+OBJ_FLAG = -ffreestanding -fpic -fno-stack-protector -fshort-wchar -mgeneral-regs-only -Wall -Wextra -Wpedantic -O3
+LIBRARY=
+SOURCE_DIR = core init uefi/lib arch/aarch64
+INCLUDE_DIR = .
+OBJ_DIR = obj
+LIB =
+
+
+#Output
+OUTPUT = bootLoader.elf
+
+[x86_64-kernel]
+
+#Project info
+CC = x86_64-elf-gcc
+C_FLAG = -nostdlib -Wl\,-T\,x86_64.lds -Wl\,-Bsymbolic -Wl\,-znocombreloc -lgcc 
+OBJ_FLAG = -ffreestanding -fpic -fno-stack-protector -fshort-wchar -mno-red-zone -mgeneral-regs-only -mabi\=ms -Wall -Wextra -Wpedantic -O3 
+LIBRARY=
+SOURCE_DIR = core init uefi/lib arch/x86_64
+INCLUDE_DIR = .
+OBJ_DIR = obj
+LIB =
+
+
+#Output
+OUTPUT = kernel.elf
+
+[aarch64-kernel]
+
+#Project info
+CC = aarch64-elf-gcc
+C_FLAG = -nostdlib -Wl\,-T\,aarch64.lds -Wl\,-Bsymbolic -Wl\,-znocombreloc -lgcc
+OBJ_FLAG = -ffreestanding -fpic -fno-stack-protector -fshort-wchar -mgeneral-regs-only -Wall -Wextra -Wpedantic -O3
+LIBRARY=
+SOURCE_DIR = core init uefi/lib arch/aarch64
+INCLUDE_DIR = .
+OBJ_DIR = obj
+LIB =
+
+
+#Output
+OUTPUT = kernel.elf
