@@ -1,7 +1,19 @@
 #pragma once
 #include <uefi/uefi.h>
 #include <uefi/protocol/loaded_image.h>
+#include <uefi/protocol/media_access.h>
 #include <uefi/console/graphic.h>
+
+#define INIT_CPU_IMAGE_PATH L"bootLoader\\init_cpu.efi"
+
+#define CHECK_SUCCSESS(status) \
+	if(status == EFI_SUCCESS)\
+		wcprintf(L"...Success\r\n");\
+	else{\
+		wcprintf(L"...Failed(ErrorCode:0x%x)\r\n",(UINT64)status);\
+		return status;\
+	}
+
 
 typedef struct
 {
@@ -10,6 +22,7 @@ typedef struct
 	EFI_DEVICE_PATH_TO_TEXT_PROTOCOL* devPathToText;
 	EFI_DEVICE_PATH_FROM_TEXT_PROTOCOL* devPathFromText;
 	EFI_DEVICE_PATH_UTILITIES_PROTOCOL* devPathUtilities;
+	EFI_SIMPLE_FILE_SYSTEM_PROTOCOL* simpleFileSystem;
 	EFI_GRAPHICS_OUTPUT_PROTOCOL* graphicsOut;
 } PROTOCOL_LIST;
 
@@ -40,9 +53,12 @@ typedef struct
 	EFI_PHYSICAL_ADDRESS gdtptr;
 	EFI_PHYSICAL_ADDRESS page4;
 	EFI_PHYSICAL_ADDRESS kernelEntry;
+	EFI_PHYSICAL_ADDRESS cpuInitEntry;
+	EFI_FILE_PROTOCOL* root;
 } BOOT_LOADER_DATA;
 #endif
 
 EFI_STATUS init_bootloader(CONST EFI_SYSTEM_TABLE *SystemTable,CONST EFI_HANDLE imageHandle,KERNEL_INFO* info);
 EFI_STATUS init_protocol  (CONST EFI_SYSTEM_TABLE* systemTable,CONST EFI_HANDLE imageHandle,BOOT_LOADER_DATA* data);
-EFI_STATUS init_kernel    (CONST EFI_SYSTEM_TABLE* systemTable,CONST EFI_HANDLE imageHandle,BOOT_LOADER_DATA* data,CONST CHAR16* kernel_file); 
+EFI_STATUS load_kernel    (CONST EFI_SYSTEM_TABLE* systemTable,CONST EFI_HANDLE imageHandle,BOOT_LOADER_DATA* data,CONST CHAR16* kernel_file); 
+EFI_STATUS load_cpu		  (CONST EFI_SYSTEM_TABLE* systemTable,CONST EFI_HANDLE imageHandle,BOOT_LOADER_DATA* data);

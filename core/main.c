@@ -50,13 +50,18 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle,EFI_SYSTEM_TABLE *SystemTable)
 	}
 
 	//load kernel
-	if(init_kernel(SystemTable,ImageHandle,&data,KERNEL_PATH) != EFI_SUCCESS){
+	if(load_kernel(SystemTable,ImageHandle,&data,KERNEL_PATH) != EFI_SUCCESS){
 		SystemTable->BootServices->Stall(1000*1000*200);
 		SystemTable->RuntimeServices->ResetSystem(EfiResetShutdown,EFI_SUCCESS,0,NULL);
 	}
 
+	// init cpu
+	if(load_cpu(SystemTable,ImageHandle,&data) != EFI_SUCCESS){
+		SystemTable->BootServices->Stall(1000*1000*200);
+		SystemTable->RuntimeServices->ResetSystem(EfiResetShutdown,EFI_SUCCESS,0,NULL);
+	}
 
-	//get Graphic mode
+	//get Graphic mode(will be deleate)
 	EFI_GRAPHICS_OUTPUT_MODE_INFORMATION *gInfo;
 	UINTN sizeOfInfo;
 	if(data.protocols.graphicsOut->QueryMode(data.protocols.graphicsOut, data.protocols.graphicsOut->Mode->Mode, &sizeOfInfo, &gInfo) != EFI_SUCCESS){
@@ -71,6 +76,7 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle,EFI_SYSTEM_TABLE *SystemTable)
 		SystemTable->BootServices->Stall(1000*1000*3);
 		SystemTable->RuntimeServices->ResetSystem(EfiResetShutdown,EFI_SUCCESS,0,NULL);
 	}
+
 
 	//jmp kernel
 	jmp_kernel(&data,&info);

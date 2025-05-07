@@ -28,5 +28,5 @@ init_cpu:
 	// Set CR0
 	mov 0xB, %ebx;
 	mov %ebx, %cr0; 
-
-	ret;
+	
+	lret;

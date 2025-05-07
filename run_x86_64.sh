@@ -7,6 +7,7 @@ make
 
 #make efi file
 x86_64-elf-objcopy -I elf64-x86-64 -O efi-app-x86_64 bootLoader.elf BOOTX64.EFI
+x86_64-elf-objcopy -I elf32-i386 -O efi-app-i386 init_cpu.elf init_cpu.efi
 
 #make disk image
 dd if=/dev/zero of=fat.img bs=1k count=1440
@@ -16,6 +17,8 @@ mmd -i fat.img ::/EFI/BOOT
 mcopy -i fat.img BOOT*.EFI ::/EFI/BOOT
 mmd -i fat.img ::/kernel
 mcopy -i fat.img kernel.efi ::/kernel
+mmd -i fat.img ::/bootLoader
+mcopy -i fat.img init_cpu.efi ::/bootLoader
 
 #excute
 # qemu-system-x86_64 -machine q35 -m 256 -smp 2 -bios OVMF.fd -drive file=fat.img,format=raw,if=virtio

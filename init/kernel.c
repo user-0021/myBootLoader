@@ -1,6 +1,7 @@
 #include <init/init.h>
 #include <uefi/lib/consoleio.h>
 #include <uefi/protocol/loaded_image.h>
+#include <uefi/protocol/media_access.h>
 #include <mem/virtualAddress.h>
 
 
@@ -13,23 +14,20 @@
 		return status;\
 	}
 
-EFI_STATUS init_kernel(CONST EFI_SYSTEM_TABLE* systemTable,CONST EFI_HANDLE imageHandle,BOOT_LOADER_DATA* data,CONST CHAR16* kernel_file){
+EFI_STATUS load_kernel(CONST EFI_SYSTEM_TABLE* systemTable,CONST EFI_HANDLE imageHandle,BOOT_LOADER_DATA* data,CONST CHAR16* kernel_file){
 	wcprintf(L"\nTry load kernel\r\n");
 
+	//generate path
 	EFI_DEVICE_PATH_PROTOCOL* kernelPath	= data->protocols.devPathFromText->ConvertTextToDevicPath(kernel_file);
 	EFI_DEVICE_PATH_PROTOCOL* completePath	= data->protocols.devPathUtilities->AppendDevicePath(data->protocols.devPath,kernelPath);
 	wcprintf(L"Kernel path:%s\r\n",data->protocols.devPathToText->ConvertDevicePathToText(completePath,0,0));
 
+	//load image
 	EFI_HANDLE kernelImage;
 	EFI_STATUS status = systemTable->BootServices->LoadImage(FALSE,imageHandle,completePath,NULL,0,&kernelImage);
-	
-	if(status == EFI_SUCCESS)
-		wcprintf(L"...Success\r\n");\
-	else{
-		wcprintf(L"...Failed(ErrorCode:0x%x)\r\n",(UINT64)status);\
-		return status;
-	}
+	CHECK_SUCCSESS(status);
 
+	//open loaded imgae protocol
 	wcprintf(L"\n\nTry loaded kernel infomation\r\n");
 	EFI_GUID loadedImageProtocolGUID = EFI_LOADED_IMAGE_PROTOCOL_GUID;
 	EFI_LOADED_IMAGE_PROTOCOL* kernelLoadedImage;
@@ -37,11 +35,9 @@ EFI_STATUS init_kernel(CONST EFI_SYSTEM_TABLE* systemTable,CONST EFI_HANDLE imag
 
 	wcprintf(L"\n");
 
-
+	//create virtual memory map(page)
 	status = createVirtualMap(systemTable->BootServices,data->protocols.bootLoaderImage,kernelLoadedImage,data);
-	if(status != EFI_SUCCESS){
-		return EFI_NOT_READY;
-	}
+	CHECK_SUCCSESS(status);
 
 	return EFI_SUCCESS;
 }
