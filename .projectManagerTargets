@@ -5,7 +5,7 @@ CC = x86_64-elf-gcc
 C_FLAG = -nostdlib -shared -Wl\,-T\,amd64.lds -Wl\,-Bsymbolic -Wl\,-znocombreloc -lgcc 
 OBJ_FLAG = -ffreestanding -fpic -fno-stack-protector -fshort-wchar -mno-red-zone -mgeneral-regs-only -mabi\=ms -Wall -Wextra -Wpedantic -O3 
 LIBRARY=
-SOURCE_DIR = core init uefi/lib arch/amd64
+SOURCE_DIR = core init uefi/lib arch/amd64 pe-loader
 INCLUDE_DIR = .
 OBJ_DIR = obj
 LIB =
