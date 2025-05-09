@@ -31,12 +31,15 @@ EFI_STATUS load_cpu(CONST EFI_SYSTEM_TABLE* systemTable,CONST EFI_HANDLE imageHa
 	EFI_PHYSICAL_ADDRESS buffer;
 	status = systemTable->BootServices->AllocatePages(AllocateAnyPages,EfiBootServicesCode,bufferSize >> 12,&buffer);
 	CHECK_SUCCSESS(status);
+	systemTable->BootServices->SetMem((VOID*)buffer,bufferSize,0);
 
 	wcprintf(L"\nTry read file\r\n");
 	status = initCPU->Read(initCPU,&bufferSize,(void*)buffer);
 	CHECK_SUCCSESS(status);
 	
-	status = load_pe(systemTable,(void*)buffer);
+	wcprintf(L"\nTry load pe\r\n");
+	UINTN imageSize = 0;
+	status = load_pe((void*)buffer,bufferSize,NULL,&imageSize);
 	CHECK_SUCCSESS(status);
 
 	while (1)

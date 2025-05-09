@@ -34,7 +34,7 @@ OUTPUT = bootLoader.elf
 
 #Project info
 CC = x86_64-elf-gcc
-C_FLAG = -nostdlib -Wl\,-T\,x86.lds -Wl\,-Bsymbolic -Wl\,-znocombreloc
+C_FLAG = -nostdlib -shared -Wl\,-T\,x86.lds -Wl\,-Bsymbolic -Wl\,-znocombreloc
 OBJ_FLAG = -ffreestanding -m32 -fpic -fno-stack-protector -fshort-wchar -mno-red-zone -mgeneral-regs-only -mabi\=ms -Wall -Wextra -Wpedantic -O3 
 LIBRARY=
 SOURCE_DIR = arch/x86
