@@ -6,30 +6,15 @@
 
 #define OPEN_PROTOCOL(system,status,handle,protocol,interface,agentHandle) \
 	status = system->BootServices->OpenProtocol(handle,&protocol,(void**)&interface,agentHandle,NULL,EFI_OPEN_PROTOCOL_GET_PROTOCOL);\
-	if(status == EFI_SUCCESS)\
-		wcprintf(L"...Success\r\n");\
-	else{\
-		wcprintf(L"...Failed(ErrorCode:0x%x)\r\n",(UINT64)status);\
-		return status;\
-	}
+	CHECK_SUCCSESS(status);
 
 #define LOCATE_PROTOCOL(system,status,protocol,interface) \
 	status = system->BootServices->LocateProtocol(&protocol,NULL,(void**)&interface);\
-	if(status == EFI_SUCCESS)\
-		wcprintf(L"...Success\r\n");\
-	else{\
-		wcprintf(L"...Failed(ErrorCode:0x%x)\r\n",(UINT64)status);\
-		return status;\
-	}
+	CHECK_SUCCSESS(status);
 
 #define HANDLE_PROTOCOL(system,status,handle,protocol,interface) \
 	status = system->BootServices->HandleProtocol(handle,&protocol,(void**)&interface);\
-	if(status == EFI_SUCCESS)\
-		wcprintf(L"...Success\r\n");\
-	else{\
-		wcprintf(L"...Failed(ErrorCode:0x%x)\r\n",(UINT64)status);\
-		return status;\
-	}
+	CHECK_SUCCSESS(status);
 
 
 VOID EFIAPI ApHalt(__attribute__ ((__unused__)) VOID *Buffer) {

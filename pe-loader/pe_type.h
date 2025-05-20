@@ -81,6 +81,49 @@
 #define IMAGE_FILE_UP_SYSTEM_ONLY 		   0x4000//ファイルは、単一プロセッサ コンピューターでのみ実行する必要があります。
 #define IMAGE_FILE_BYTES_REVERSED_HI 	   0x8000//ビッグ エンディアン: MSB はメモリ内の LSB の前にあります。 このフラグは非推奨であり、0 にする必要があります。
 
+//section chara
+#define IMAGE_SCN_RESURVED1				 0x00000000 //将来の使用のために予約済み。
+#define IMAGE_SCN_RESURVED2				 0x00000001 //将来の使用のために予約済み。
+#define IMAGE_SCN_RESURVED3				 0x00000002 //将来の使用のために予約済み。
+#define IMAGE_SCN_RESURVED4				 0x00000004 //将来の使用のために予約済み。
+#define IMAGE_SCN_TYPE_NO_PAD 			 0x00000008 //セクションを次の境界に埋め込むべきではありません。 このフラグは廃止され、IMAGE_SCN_ALIGN_1BYTES に置き換えられました。 これは、オブジェクト ファイルに対して有効です。
+#define IMAGE_SCN_RESURVED5				 0x00000010 //将来の使用のために予約済み。
+#define IMAGE_SCN_CNT_CODE 				 0x00000020 //セクションには実行可能コードが含まれています。
+#define IMAGE_SCN_CNT_INITIALIZED_DATA 	 0x00000040 //セクションには、初期化されたデータが含まれています。
+#define IMAGE_SCN_CNT_UNINITIALIZED_DATA 0x00000080 //このセクションには初期化されていないデータが含まれています。
+#define IMAGE_SCN_LNK_OTHER 			 0x00000100 //将来の使用のために予約済み。
+#define IMAGE_SCN_LNK_INFO 				 0x00002000 //セクションには、コメントまたはその他の情報が含まれています。 .drectve セクションには、この型があります。 これは、オブジェクト ファイルに対してのみ有効です。
+#define IMAGE_SCN_RESURVED6				 0x00000400 //将来の使用のために予約済み。
+#define IMAGE_SCN_LNK_REMOVE 			 0x00000800 //セクションはイメージの一部になりません。 これは、オブジェクト ファイルに対して有効です。
+#define IMAGE_SCN_LNK_COMDAT 			 0x00001000 //セクションには COMDAT データが含まれています。 詳細については、「COMDAT セクション (オブジェクトのみ)」を参照してください。 これは、オブジェクト ファイルに対して有効です。
+#define IMAGE_SCN_GPREL 				 0x00000800 //このセクションには、グローバル ポインター (GP) を介して参照されるデータが含まれています。
+#define IMAGE_SCN_MEM_PURGEABLE 		 0x00020000 //将来の使用のために予約済み。
+#define IMAGE_SCN_MEM_16BIT 			 0x00020000 //将来の使用のために予約済み。
+#define IMAGE_SCN_MEM_LOCKED 			 0x00040000 //将来の使用のために予約済み。
+#define IMAGE_SCN_MEM_PRELOAD 			 0x00080000 //将来の使用のために予約済み。
+#define IMAGE_SCN_ALIGN_1BYTES 			 0x00100000 //1 バイト境界にデータを配置します。 オブジェクト ファイルに対してのみ有効です。
+#define IMAGE_SCN_ALIGN_2BYTES 			 0x00200000 //2 バイト境界にデータを配置します。 オブジェクト ファイルに対してのみ有効です。
+#define IMAGE_SCN_ALIGN_4BYTES 			 0x00300000 //4 バイト境界にデータを配置します。 オブジェクト ファイルに対してのみ有効です。
+#define IMAGE_SCN_ALIGN_8BYTES 			 0x00400000 //8 バイト境界にデータを配置します。 オブジェクト ファイルに対してのみ有効です。
+#define IMAGE_SCN_ALIGN_16BYTES 		 0x00500000 //16 バイト境界にデータを配置します。 オブジェクト ファイルに対してのみ有効です。
+#define IMAGE_SCN_ALIGN_32BYTES 		 0x00600000 //32 バイト境界にデータを配置します。 オブジェクト ファイルに対してのみ有効です。
+#define IMAGE_SCN_ALIGN_64BYTES 		 0x00700000 //64 バイト境界にデータを配置します。 オブジェクト ファイルに対してのみ有効です。
+#define IMAGE_SCN_ALIGN_128BYTES 		 0x00800000 //128 バイト境界にデータを配置します。 オブジェクト ファイルに対してのみ有効です。
+#define IMAGE_SCN_ALIGN_256BYTES 		 0x00900000 //256 バイト境界にデータを配置します。 オブジェクト ファイルに対してのみ有効です。
+#define IMAGE_SCN_ALIGN_512BYTES 		 0x00A00000 //512 バイト境界にデータを配置します。 オブジェクト ファイルに対してのみ有効です。
+#define IMAGE_SCN_ALIGN_1024BYTES 		 0x00B00000 //1024 バイト境界にデータを配置します。 オブジェクト ファイルに対してのみ有効です。
+#define IMAGE_SCN_ALIGN_2048BYTES 		 0x00C00000 //2048 バイト境界にデータを配置します。 オブジェクト ファイルに対してのみ有効です。
+#define IMAGE_SCN_ALIGN_4096BYTES 		 0x00D00000 //4096 バイト境界にデータを配置します。 オブジェクト ファイルに対してのみ有効です。
+#define IMAGE_SCN_ALIGN_8192BYTES 		 0x00E00000 //8192 バイト境界にデータを配置します。 オブジェクト ファイルに対してのみ有効です。
+#define IMAGE_SCN_LNK_NRELOC_OVFL 		 0x01000000 //セクションには拡張再配置が含まれています。
+#define IMAGE_SCN_MEM_DISCARDABLE 		 0x02000000 //セクションは、必要に応じてカード解除できます。
+#define IMAGE_SCN_MEM_NOT_CACHED 		 0x04000000 //セクションをキャッシュできません。
+#define IMAGE_SCN_MEM_NOT_PAGED 		 0x08000000 //セクションはページングできません。
+#define IMAGE_SCN_MEM_SHARED 			 0x10000000 //セクションはメモリ内で共有できます。
+#define IMAGE_SCN_MEM_EXECUTE 			 0x20000000 //セクションはコードとして実行できます。
+#define IMAGE_SCN_MEM_READ 				 0x40000000 //セクションを読み取ることができます。
+#define IMAGE_SCN_MEM_WRITE 			 0x80000000 //セクションは書き込むことができます。
+
 
 typedef struct _IMAGE_DOS_HEADER {	  		// DOS .EXE header
 	uint16_t   e_magic;						// Magic number

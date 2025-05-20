@@ -1,4 +1,3 @@
-#include <kernel/mem/type.h>
 #include <uefi/lib/consoleio.h>
 #include <init/init.h>
 
@@ -27,8 +26,7 @@
    {0x9a,0x16,0x00,0x90,0x27,0x3f,0xc1,0x4d}}
 
 #define GUID_EQ(left,right) (((left).Data1 == (right).Data1) && ((left).Data2 == (right).Data2) && ((left).Data3 == (right).Data3) &&\
-   ((left).Data4[0] == (right).Data4[0]) && ((left).Data4[1] == (right).Data4[1]) && ((left).Data4[2] == (right).Data4[2]) && ((left).Data4[3] == (right).Data4[3]) &&\
-   ((left).Data4[4] == (right).Data4[4]) && ((left).Data4[5] == (right).Data4[5]) && ((left).Data4[6] == (right).Data4[6]) && ((left).Data4[7] == (right).Data4[7]))
+   (((UINT64*)(left).Data4)[0] == ((UINT64*)(right).Data4)[0]))
 
 
 void print_GUID(EFI_GUID guid){
@@ -61,6 +59,7 @@ EFI_STATUS init_bootloader(CONST EFI_SYSTEM_TABLE *SystemTable,CONST EFI_HANDLE 
 		}
 		print_GUID(SystemTable->ConfigurationTable[i].VendorGuid);
 	}
+	
 
 	//check table
 	if((info->tables.acpiTable == NULL && info->tables.acpi20Table == NULL) || (info->tables.smBiosTable == NULL && info->tables.smBios3Table == NULL)){

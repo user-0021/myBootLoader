@@ -47,7 +47,7 @@ typedef struct{
 
 EFI_STATUS allocateLev3PageTableLinear(EFI_BOOT_SERVICES* bootServices,EFI_PHYSICAL_ADDRESS lev4_page,EFI_VIRTUAL_ADDRESS virtualBegin,EFI_PHYSICAL_ADDRESS physicalBegin,UINT64 allocateSize,EFI_PHYSICAL_ADDRESS flag);
 
-EFI_STATUS createVirtualMap(EFI_BOOT_SERVICES* bootServices,EFI_LOADED_IMAGE_PROTOCOL* bootloader,EFI_LOADED_IMAGE_PROTOCOL* kernel,BOOT_LOADER_DATA* data){
+EFI_STATUS createVirtualMap(EFI_BOOT_SERVICES* bootServices,EFI_LOADED_IMAGE_PROTOCOL* bootloader,BINARY_FILE* kernel,BOOT_LOADER_DATA* data){
 	EFI_PHYSICAL_ADDRESS lev4_page;
 	EFI_STATUS status;
 
@@ -55,57 +55,10 @@ EFI_STATUS createVirtualMap(EFI_BOOT_SERVICES* bootServices,EFI_LOADED_IMAGE_PRO
 
 	//allocate lev4 page
 	wcprintf(L"Try allocate lev4 table..\r\n");
-	status = bootServices->AllocatePages(AllocateAnyPages,EfiLoaderData,1,&lev4_page);
-	if(status != EFI_SUCCESS){
-		wcprintf(L"...Failed(ErrorCode:%x)\r\n\n",status);
-		return status;
-	}else{
-		wcprintf(L"...Success\r\n");
-		wcprintf(L"Locate on %0x\r\n\n",(UINT64)lev4_page);
-	}
-
+	status = bootServices->AllocatePages(AllocateAnyPages,MEMORY_TYPE_PAGE,1,&lev4_page);
+	CHECK_SUCCSESS(status);
 	bootServices->SetMem((void*)lev4_page,MEMORY_PAGE_SIZE,0);
 	
-	//GetMemorySize
-	UINTN mapSize = 0;
-	UINTN mapKey, descSize;
-	UINT32 descVer;
-	EFI_PHYSICAL_ADDRESS descripterBuffer = 0;
-	EFI_PHYSICAL_ADDRESS memorySize;
-
-	wcprintf(L"Try load availeble memory..\r\n");
-	wcprintf(L"Try get memory map..\r\n");
-	status = bootServices->GetMemoryMap(&mapSize,(void*)descripterBuffer,&mapKey,&descSize,&descVer);
-	if(status == EFI_BUFFER_TOO_SMALL){
-		mapSize = (mapSize >> 12) + 2;
-		EFI_PHYSICAL_ADDRESS tmp;
-		status = bootServices->AllocatePages(AllocateAnyPages,EfiBootServicesData,mapSize,&tmp);
-		descripterBuffer = tmp;
-		mapSize = mapSize << 12;
-
-		if(status == EFI_SUCCESS)
-			status = bootServices->GetMemoryMap(&mapSize,(void*)descripterBuffer,&mapKey,&descSize,&descVer);
-	}
-
-	if(status == EFI_SUCCESS){
-		UINTN descCount = mapSize / descSize;
-		UINT8* desc = (void*)descripterBuffer;
-		
-		//find memory end
-		desc += descSize * (descCount - 1);
-		while(((EFI_MEMORY_DESCRIPTOR*)desc)->Type == EfiReservedMemoryType){
-			desc -= descSize;
-		}
-		memorySize = (((EFI_MEMORY_DESCRIPTOR*)desc)->PhysicalStart ) + ((((EFI_MEMORY_DESCRIPTOR*)desc)->NumberOfPages << 12) - 1);
-
-		wcprintf(L"...Success\r\n");
-		wcprintf(L"Memory availeble size: 0x%x\r\n",memorySize);
-		memorySize = memorySize >> 12;
-	}else{
-		wcprintf(L"...Failed(ErrorCode:%x)\r\n\n",status);
-		return status;
-	}
-
 	//copy bootloader text
 	UINT16 page3_count = 1 + VADDRESS_GET_LEV4_OFFSET(((EFI_PHYSICAL_ADDRESS)bootloader->ImageBase)) - VADDRESS_GET_LEV4_OFFSET(((EFI_PHYSICAL_ADDRESS)bootloader->ImageBase + bootloader->ImageSize));
 	EFI_PHYSICAL_ADDRESS cr3;
@@ -120,65 +73,50 @@ EFI_STATUS createVirtualMap(EFI_BOOT_SERVICES* bootServices,EFI_LOADED_IMAGE_PRO
 		*((UINT64*)(void*) (lev4_page + offset)) = *((UINT64*)(void*) (cr3 + offset));
 	}
 
-	//copy bootloader stack (詳しいサイズなどは不明なので雑コピー)
-	page3_count = 3;
-	EFI_PHYSICAL_ADDRESS rsp;
-
-	asm volatile (
-		"mov %%rsp, %[rsp_reg]\n\t"
-		:[rsp_reg]"=r"(rsp)
-	);
-
-	offset = ((VADDRESS_GET_LEV4_OFFSET(((EFI_PHYSICAL_ADDRESS)rsp)) - 1) << 3);
-	for(; page3_count != 0 ; page3_count-- , offset += (1 << 3)){
-		*((UINT64*)(void*) (lev4_page + offset)) = *((UINT64*)(void*) (cr3 + offset));
-	}
-
-	// memory direct map 
-	wcprintf(L"Try allocate direct map table..\r\n");
-	status = allocateLev3PageTableLinear(bootServices,lev4_page,MEMORY_DIRECTMAP_HEAD
-		,0,memorySize,SET_PRESENT(1) | SET_WRITABLE(1) | SET_GROABAL(1) | SET_NO_EXECUTEBLE(1));
-
-	if(status != EFI_SUCCESS){
-		wcprintf(L"...Failed(ErrorCode:%x)\r\n\n",status);
-		return status;
-	}else{
-		wcprintf(L"...Success\r\n");
-	}
 
 
 	// kernel text 
 	wcprintf(L"Try allocate kernel text table..\r\n");
+	EFI_PHYSICAL_ADDRESS kernelCode;
+	status = bootServices->AllocatePages(AllocateAnyPages,MEMORY_TYPE_PAGE,kernel->size >> 12,&kernelCode);
+	CHECK_SUCCSESS(status);
+	bootServices->SetMem((VOID*)kernelCode,kernel->size,0);
 	status = allocateLev3PageTableLinear(bootServices,lev4_page,MEMORY_KERNEL_HEAD
-		,(EFI_PHYSICAL_ADDRESS)kernel->ImageBase,kernel->ImageSize >> 12,SET_PRESENT(1) | SET_GROABAL(1));
+		,(EFI_PHYSICAL_ADDRESS)kernelCode,kernel->size >> 12,SET_PRESENT(1) | SET_GROABAL(1) | SET_NO_EXECUTEBLE(1));
+	CHECK_SUCCSESS(status);
+	
+	UINTN i;
+	for(i = 0;i < kernel->sectionCount;i++){
+		
+		EFI_PHYSICAL_ADDRESS flag = 0;
+		if(!(kernel->sections[i].flag & BINARY_SECTION_READONRY))
+			flag |= SET_WRITABLE(1);
+		if(!(kernel->sections[i].flag & BINARY_SECTION_EXECUTE))
+			flag |= SET_NO_EXECUTEBLE(1);
 
-	if(status != EFI_SUCCESS){
-		wcprintf(L"...Failed(ErrorCode:%x)\r\n\n",status);
-		return status;
-	}else{
-		wcprintf(L"...Success\r\n");
+
+		bootServices->CopyMem((VOID*)(kernelCode + kernel->sections[i].base),(VOID*)kernel->sections[i].imagePos,kernel->sections[i].imageSize);
+		status = allocateLev3PageTableLinear(bootServices,lev4_page,MEMORY_KERNEL_HEAD + (EFI_PHYSICAL_ADDRESS)kernel->sections[i].base
+			,(EFI_PHYSICAL_ADDRESS)kernelCode + kernel->sections[i].base,kernel->sections[i].sectionSize >> 12,SET_PRESENT(1) | SET_GROABAL(1));
+
+		CHECK_SUCCSESS(status);
 	}
 
 	//make gdt table pointer
 	wcprintf(L"Try allocate gdt table..\r\n");
 
 	EFI_PHYSICAL_ADDRESS gdt;
-	status = bootServices->AllocatePages(AllocateAnyPages,EfiLoaderData,1,&gdt);
-	if(status != EFI_SUCCESS){
-		wcprintf(L"...Failed(ErrorCode:%x)\r\n\n",status);
-		return status;
-	}else{
-		wcprintf(L"...Success\r\n");
-	}
+	status = bootServices->AllocatePages(AllocateAnyPages,MEMORY_TYPE_PAGE,1,&gdt);
+	CHECK_SUCCSESS(status);
 
 
-	((long long *)gdt)[0] = 0x0000000000000000;
-	((long long *)gdt)[1] = 0x00af9a000000ffff;
-	((long long *)gdt)[2] = 0x00cf93000000ffff;
-	((long long *)gdt)[3] = 0x00affa000000ffff;
-	((long long *)gdt)[4] = 0x00cff3000000ffff;
-	((long long *)gdt)[5] = 0x00cf9a000000ffff;
-	((long long *)gdt)[6] = 0x00cf93000000ffff;
+	((long long *)gdt)[0] = 0x0000000000000000;//null
+	((long long *)gdt)[1] = 0x00af9a000000ffff;//64bit code -kernel
+	((long long *)gdt)[2] = 0x00cf93000000ffff;//64bit data -kernel
+	((long long *)gdt)[3] = 0x00affa000000ffff;//64bit code -user
+	((long long *)gdt)[4] = 0x00cff3000000ffff;//64bit data -user
+	((long long *)gdt)[5] = 0x00cf9a000000ffff;//32bit code -kernel
+	((long long *)gdt)[6] = 0x00cf93000000ffff;//32bit data -kernel
 
 	*(GDT_PTR*)(void*)(gdt + 0x08 * 7) = (GDT_PTR){
 		.limit = (0x08 * 7) - 1,
@@ -206,7 +144,7 @@ EFI_STATUS allocateLev3PageTableLinear(EFI_BOOT_SERVICES* bootServices,EFI_PHYSI
 	UINTN need_allocate_size = countInvalidTable(lev4_page,VADDRESS_GET_LEV4_OFFSET(virtualBegin),lev3_page_count);
 
 	if(need_allocate_size != 0){
-		status = bootServices->AllocatePages(AllocateAnyPages,EfiLoaderData,need_allocate_size,&lev3_pages);
+		status = bootServices->AllocatePages(AllocateAnyPages,,need_allocate_size,&lev3_pages);
 		if(status != EFI_SUCCESS)
 			return status;
 	
@@ -226,9 +164,10 @@ EFI_STATUS allocateLev3PageTableLinear(EFI_BOOT_SERVICES* bootServices,EFI_PHYSI
 		//get next page
 		UINT64 page;
 		if(GET_PRESENT(*((UINT64*)(VOID*)writeItr))){
+			*((UINT64*)(VOID*)writeItr) |= (flag & (~0x800FFFFFFFFFF1D8UL));
 			page = GET_PHYSICAL_ADDRESS(*((UINT64*)(VOID*)writeItr));
 		}else{
-			*((UINT64*)(VOID*)writeItr) = (flag & (~0x000FFFFFFFFFF100UL)) | SET_PHYSICAL_ADDRESS(pageItr);
+			*((UINT64*)(VOID*)writeItr) = (flag & (~0x800FFFFFFFFFF1D8UL)) | SET_PHYSICAL_ADDRESS(pageItr);
 			page = pageItr;
 			pageItr  += MEMORY_PAGE_SIZE;
 		}
@@ -258,7 +197,7 @@ EFI_STATUS allocateLev2PageTableLinear(EFI_BOOT_SERVICES* bootServices,EFI_PHYSI
 	UINTN need_allocate_size = countInvalidTable(lev3_page,VADDRESS_GET_LEV3_OFFSET(virtualBegin),lev2_page_count);
 
 	if(need_allocate_size != 0){
-		status = bootServices->AllocatePages(AllocateAnyPages,EfiLoaderData,need_allocate_size,&lev2_pages);
+		status = bootServices->AllocatePages(AllocateAnyPages,MEMORY_TYPE_PAGE,need_allocate_size,&lev2_pages);
 		if(status != EFI_SUCCESS)
 			return status;
 
@@ -276,9 +215,10 @@ EFI_STATUS allocateLev2PageTableLinear(EFI_BOOT_SERVICES* bootServices,EFI_PHYSI
 		//get next page
 		UINT64 page;
 		if(GET_PRESENT(*((UINT64*)(VOID*)writeItr))){
+			*((UINT64*)(VOID*)writeItr) |= (flag & (~0x800FFFFFFFFFF158UL));
 			page = GET_PHYSICAL_ADDRESS(*((UINT64*)(VOID*)writeItr));
 		}else{
-			*((UINT64*)(VOID*)writeItr) = (flag & (~0x000FFFFFFFFFF100UL)) | SET_PHYSICAL_ADDRESS(pageItr);
+			*((UINT64*)(VOID*)writeItr) = (flag & (~0x800FFFFFFFFFF158UL)) | SET_PHYSICAL_ADDRESS(pageItr);
 			page = pageItr;
 			pageItr  += MEMORY_PAGE_SIZE;
 		}
@@ -307,7 +247,7 @@ EFI_STATUS allocateLev1PageTableLinear(EFI_BOOT_SERVICES* bootServices,EFI_PHYSI
 	UINTN need_allocate_size = countInvalidTable(lev2_page,VADDRESS_GET_LEV2_OFFSET(virtualBegin),lev1_page_count);
 
 	if(need_allocate_size != 0){
-		status = bootServices->AllocatePages(AllocateAnyPages,EfiLoaderData,need_allocate_size,&lev1_pages);
+		status = bootServices->AllocatePages(AllocateAnyPages,MEMORY_TYPE_PAGE,need_allocate_size,&lev1_pages);
 		if(status != EFI_SUCCESS)
 			return status;
 
@@ -325,9 +265,10 @@ EFI_STATUS allocateLev1PageTableLinear(EFI_BOOT_SERVICES* bootServices,EFI_PHYSI
 		//get next page
 		UINT64 page;
 		if(GET_PRESENT(*((UINT64*)(VOID*)writeItr))){
-			page = GET_PHYSICAL_ADDRESS(*((UINT64*)(VOID*)writeItr));
+			*((UINT64*)(VOID*)writeItr) |= (flag & (~0x800FFFFFFFFFF158UL));
+			page = GET_PHYSICAL_ADDRESS(*((UINT64*)(VOID*)writeItr)) ;
 		}else{
-			*((UINT64*)(VOID*)writeItr) = (flag & (~0x000FFFFFFFFFF100UL)) | SET_PHYSICAL_ADDRESS(pageItr);
+			*((UINT64*)(VOID*)writeItr) = (flag & (~0x800FFFFFFFFFF158UL)) | SET_PHYSICAL_ADDRESS(pageItr);
 			page = pageItr;
 			pageItr  += MEMORY_PAGE_SIZE;
 		}
@@ -350,7 +291,7 @@ EFI_STATUS allocateLev1PageTableLinear(EFI_BOOT_SERVICES* bootServices,EFI_PHYSI
 
 EFI_STATUS allocateLev0PageTableLinear(EFI_PHYSICAL_ADDRESS lev1_page,EFI_VIRTUAL_ADDRESS virtualBegin,EFI_PHYSICAL_ADDRESS physicalBegin,UINT64 allocateSize,EFI_PHYSICAL_ADDRESS flag){
 	UINTN lev0_page_count = ((allocateSize >> 0) & 0x1FF);
-
+	
 	UINT64 i;
 	EFI_PHYSICAL_ADDRESS writeItr = lev1_page + (VADDRESS_GET_LEV1_OFFSET(virtualBegin) << 3); 
 	EFI_PHYSICAL_ADDRESS readItr = physicalBegin;

@@ -5,7 +5,14 @@
 
 #include "config.h"
 
-#define KERNEL_PATH L"kernel/kernel.efi"
+#define KERNEL_PATH L"kernel\\kernel.efi"
+
+
+#define VADDRESS_GET_LEV4_OFFSET(address)	(((address) >> 39) & 0x1FF)
+#define VADDRESS_GET_LEV3_OFFSET(address)	(((address) >> 30) & 0x1FF)
+#define VADDRESS_GET_LEV2_OFFSET(address)	(((address) >> 21) & 0x1FF)
+#define VADDRESS_GET_LEV1_OFFSET(address)	(((address) >> 12) & 0x1FF)
+#define VADDRESS_GET_PAGE_OFFSET(address)	(((address) >>  0) & 0xFFF)
 
 extern VOID jmp_kernel(BOOT_LOADER_DATA* data,KERNEL_INFO* info);
 
@@ -55,12 +62,6 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle,EFI_SYSTEM_TABLE *SystemTable)
 		SystemTable->RuntimeServices->ResetSystem(EfiResetShutdown,EFI_SUCCESS,0,NULL);
 	}
 
-	// init cpu
-	if(load_cpu(SystemTable,ImageHandle,&data) != EFI_SUCCESS){
-		SystemTable->BootServices->Stall(1000*1000*200);
-		SystemTable->RuntimeServices->ResetSystem(EfiResetShutdown,EFI_SUCCESS,0,NULL);
-	}
-
 	//get Graphic mode(will be deleate)
 	EFI_GRAPHICS_OUTPUT_MODE_INFORMATION *gInfo;
 	UINTN sizeOfInfo;
@@ -70,13 +71,12 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle,EFI_SYSTEM_TABLE *SystemTable)
 	}
 	info.data.gInfo = *gInfo;
 	info.data.screenBuffer = data.protocols.graphicsOut->Mode->FrameBufferBase;
-	
+
 	//init bootloader
 	if(init_bootloader(SystemTable,ImageHandle,&info) != EFI_SUCCESS){
 		SystemTable->BootServices->Stall(1000*1000*3);
 		SystemTable->RuntimeServices->ResetSystem(EfiResetShutdown,EFI_SUCCESS,0,NULL);
 	}
-
 
 	//jmp kernel
 	jmp_kernel(&data,&info);

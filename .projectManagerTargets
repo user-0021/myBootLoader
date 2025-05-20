@@ -29,35 +29,3 @@ LIB =
 
 #Output
 OUTPUT = bootLoader.elf
-
-[x86_64-init_cpu]
-
-#Project info
-CC = x86_64-elf-gcc
-C_FLAG = -nostdlib -shared -Wl\,-T\,x86.lds -Wl\,-Bsymbolic -Wl\,-znocombreloc
-OBJ_FLAG = -ffreestanding -m32 -fpic -fno-stack-protector -fshort-wchar -mno-red-zone -mgeneral-regs-only -mabi\=ms -Wall -Wextra -Wpedantic -O3 
-LIBRARY=
-SOURCE_DIR = arch/x86
-INCLUDE_DIR = .
-OBJ_DIR = obj
-LIB =
-
-
-#Output
-OUTPUT = init_cpu.elf
-
-[aarch64-init_cpu]
-
-#Project info
-CC = aarch64-elf-gcc
-C_FLAG = -nostdlib -Wl\,-T\,aarch64.lds -Wl\,-Bsymbolic -Wl\,-znocombreloc -lgcc
-OBJ_FLAG = -ffreestanding -fpic -fno-stack-protector -fshort-wchar -mgeneral-regs-only -Wall -Wextra -Wpedantic -O3
-LIBRARY=
-SOURCE_DIR = core init uefi/lib arch/aarch64
-INCLUDE_DIR = .
-OBJ_DIR = obj
-LIB =
-
-
-#Output
-OUTPUT = kernel.elf

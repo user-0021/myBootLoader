@@ -4,11 +4,11 @@ ENTRY(efi_main)
 
 SECTIONS
 {
-	. = 4096;
+	. = 0x1000;
 	ImageBase = .;
 	.hash : { *(.hash) }
 	.gnu.hash : { *(.gnu.hash) }
-	. = ALIGN(4096);
+	. = ALIGN(0x1000);
 	.text :
 	{
 		_text = .;
@@ -19,7 +19,7 @@ SECTIONS
 	}
 	_etext = .;
 	_text_size = . - _text;
-	. = ALIGN(4096);
+	. = ALIGN(0x1000);
 	.rdata :
 	{
 		_data = .;
@@ -29,14 +29,14 @@ SECTIONS
 		*(.srodata)
 		*(.gnu.linkonce.r.*)
 	}
-	. = ALIGN(4096);
+	. = ALIGN(0x1000);
 	.data :
 	{
 		*(.data*)
 		*(.sdata*)
 		*(.gnu.linkonce.d.*)
 	}
-	. = ALIGN(4096);
+	. = ALIGN(0x1000);
 	.bss :
 	{
 		*(.sbss)
@@ -46,9 +46,9 @@ SECTIONS
 		*(.gnu.linkonce.b.*)
 		*(COMMON)
 	}
-	. = ALIGN(4096);
+	. = ALIGN(0x1000);
 	.dynamic  : { *(.dynamic) }
-	. = ALIGN(4096);
+	. = ALIGN(0x1000);
 	.rel :
 	{
 		*(.rel.data)
@@ -58,7 +58,7 @@ SECTIONS
 	}
 	_edata = .;
 	_data_size = . - _etext;
-	. = ALIGN(4096);
+	. = ALIGN(0x1000);
 	.reloc :
 	{
 		LONG(_data);
@@ -66,11 +66,11 @@ SECTIONS
 		SHORT(0);
 		*(.reloc)
 	}
-	. = ALIGN(4096);
+	. = ALIGN(0x1000);
 	.dynsym   : { *(.dynsym) }
-	. = ALIGN(4096);
+	. = ALIGN(0x1000);
 	.dynstr   : { *(.dynstr) }
-	. = ALIGN(4096);
+	. = ALIGN(0x1000);
 	/DISCARD/ :
 	{
 		*(.rel.reloc)
