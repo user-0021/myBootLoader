@@ -5,6 +5,7 @@
 
 EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL* stdout = NULL;
 
+//クソ雑実装　デバックだけだし...
 #ifndef IGNORE_PRINT
 void wcprintf(CHAR16* fmt,...){
 	if(stdout == NULL)
