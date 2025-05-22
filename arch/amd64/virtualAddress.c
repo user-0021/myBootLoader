@@ -73,6 +73,20 @@ EFI_STATUS createVirtualMap(EFI_BOOT_SERVICES* bootServices,EFI_LOADED_IMAGE_PRO
 		*((UINT64*)(void*) (lev4_page + offset)) = *((UINT64*)(void*) (cr3 + offset));
 	}
 
+	//copy bootloader stack (詳しいサイズなどは不明なので雑コピー)
+	page3_count = 3;
+	EFI_PHYSICAL_ADDRESS rsp;
+
+	asm volatile (
+		"mov %%rsp, %[rsp_reg]\n\t"
+		:[rsp_reg]"=r"(rsp)
+	);
+
+	offset = ((VADDRESS_GET_LEV4_OFFSET(((EFI_PHYSICAL_ADDRESS)rsp)) - 1) << 3);
+	for(; page3_count != 0 ; page3_count-- , offset += (1 << 3)){
+		*((UINT64*)(void*) (lev4_page + offset)) = *((UINT64*)(void*) (cr3 + offset));
+	}
+
 
 
 	// kernel text 
@@ -126,6 +140,7 @@ EFI_STATUS createVirtualMap(EFI_BOOT_SERVICES* bootServices,EFI_LOADED_IMAGE_PRO
 	data->gdtptr = gdt + 0x08 * 7;
 	data->page4 = lev4_page;
 	data->kernelEntry = MEMORY_KERNEL_HEAD + MEMORY_PAGE_SIZE;
+	data->kernelPhy = kernelCode;
 
 	return EFI_SUCCESS;
 }
@@ -144,7 +159,7 @@ EFI_STATUS allocateLev3PageTableLinear(EFI_BOOT_SERVICES* bootServices,EFI_PHYSI
 	UINTN need_allocate_size = countInvalidTable(lev4_page,VADDRESS_GET_LEV4_OFFSET(virtualBegin),lev3_page_count);
 
 	if(need_allocate_size != 0){
-		status = bootServices->AllocatePages(AllocateAnyPages,,need_allocate_size,&lev3_pages);
+		status = bootServices->AllocatePages(AllocateAnyPages,MEMORY_TYPE_PAGE,need_allocate_size,&lev3_pages);
 		if(status != EFI_SUCCESS)
 			return status;
 	

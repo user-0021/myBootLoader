@@ -45,6 +45,7 @@ typedef struct
 	EFI_PHYSICAL_ADDRESS gdtptr;
 	EFI_PHYSICAL_ADDRESS page4;
 	EFI_PHYSICAL_ADDRESS kernelEntry;
+	EFI_PHYSICAL_ADDRESS kernelPhy;
 	EFI_FILE_PROTOCOL* root;
 } BOOT_LOADER_DATA;
 #endif
