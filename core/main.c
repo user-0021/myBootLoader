@@ -5,7 +5,7 @@
 
 #include "config.h"
 
-#define KERNEL_PATH L"kernel\\kernel.efi"
+#define KERNEL_PATH L"kernel/kernel.efi"
 
 
 #define VADDRESS_GET_LEV4_OFFSET(address)	(((address) >> 39) & 0x1FF)
@@ -61,6 +61,7 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle,EFI_SYSTEM_TABLE *SystemTable)
 		SystemTable->BootServices->Stall(1000*1000*200);
 		SystemTable->RuntimeServices->ResetSystem(EfiResetShutdown,EFI_SUCCESS,0,NULL);
 	}
+	return 0;
 
 	//get Graphic mode(will be deleate)
 	EFI_GRAPHICS_OUTPUT_MODE_INFORMATION *gInfo;
